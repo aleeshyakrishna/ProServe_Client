@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Sparkles,
@@ -13,6 +15,8 @@ import {
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/constants";
 import type { Category } from "@/types";
+import * as React from "react";
+import api from "@/lib/axios";
 
 // ------ Icon Map -------------------------------------------
 
@@ -30,7 +34,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
 // ------ Category Card ---------------------------------------
 
 function CategoryCard({ category }: { category: Category }) {
-  const Icon = ICON_MAP[category.iconName] ?? Wrench;
+  const Icon = ICON_MAP[category.iconName.toLowerCase()] ?? Wrench;
 
   return (
     <Link
@@ -76,6 +80,37 @@ function CategoryCard({ category }: { category: Category }) {
 // ------ Section ---------------------------------------------
 
 export function CategoriesSection() {
+  const [categoriesList, setCategoriesList] = React.useState<Category[]>([]);
+
+  React.useEffect(() => {
+    async function loadCategories() {
+      try {
+        const response = await api.get("/api/categories");
+        const rawCats = response.data.data;
+
+        if (Array.isArray(rawCats) && rawCats.length > 0) {
+          const normalized: Category[] = rawCats.map((item: any) => ({
+            id: item.id,
+            name: item.name.charAt(0) + item.name.slice(1).toLowerCase(),
+            slug: item.slug,
+            description: item.description || "",
+            iconName: item.iconName ? item.iconName.toLowerCase() : "wrench",
+            serviceCount: 4, // Seed fallback count
+            imageUrl: item.imageUrl || null,
+          }));
+          setCategoriesList(normalized);
+        } else {
+          setCategoriesList(CATEGORIES);
+        }
+      } catch (err) {
+        console.error("Failed to load home page categories:", err);
+        setCategoriesList(CATEGORIES);
+      }
+    }
+
+    loadCategories();
+  }, []);
+
   return (
     <section
       className="section-padding bg-[var(--bg-secondary)]"
@@ -115,10 +150,10 @@ export function CategoriesSection() {
 
         {/* Grid */}
         <div
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-4"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4"
           aria-label="Service categories"
         >
-          {CATEGORIES.map((category) => (
+          {categoriesList.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>

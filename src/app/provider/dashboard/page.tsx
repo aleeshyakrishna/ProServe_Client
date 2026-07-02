@@ -5,6 +5,7 @@ import { useDashboardStore } from "@/features/provider-dashboard/store/useDashbo
 import { OverviewTab } from "@/features/provider-dashboard/components/OverviewTab";
 import { CreateServiceForm } from "@/features/provider-dashboard/components/CreateServiceForm";
 import { ServicesTab } from "@/features/provider-dashboard/components/ServicesTab";
+import { CategoriesTab } from "@/features/provider-dashboard/components/CategoriesTab";
 
 // ------ Tab Content Controller ----------------------------------------------
 
@@ -18,6 +19,9 @@ export default function ProviderDashboardPage() {
       
       case "create-service":
         return <CreateServiceForm />;
+
+      case "categories":
+        return <CategoriesTab />;
       
       case "bookings":
         return (

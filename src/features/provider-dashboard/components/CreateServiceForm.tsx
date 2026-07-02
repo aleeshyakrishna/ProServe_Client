@@ -18,11 +18,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft, Sparkles, DollarSign } from "lucide-react";
 
+import api from "@/lib/axios";
+
 export function CreateServiceForm() {
   const { user } = useAuthStore();
   const { fetchData } = useProviderDataStore();
   const { setActiveTab } = useDashboardStore();
   const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const [categories, setCategories] = React.useState<{ id: string; name: string }[]>([]);
+
+  React.useEffect(() => {
+    async function loadCategories() {
+      try {
+        const response = await api.get("/api/categories");
+        if (Array.isArray(response.data.data)) {
+          setCategories(response.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    }
+    loadCategories();
+  }, []);
 
   const {
     register,
@@ -123,11 +140,19 @@ export function CreateServiceForm() {
                   className="w-full h-10 rounded-lg border border-[var(--border-default)] bg-[var(--surface-card)] text-sm text-[var(--text-primary)] px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700/20 focus-visible:border-navy-700 transition-colors"
                   {...register("category")}
                 >
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt.charAt(0) + opt.slice(1).toLowerCase()}
-                    </option>
-                  ))}
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name.charAt(0) + cat.name.slice(1).toLowerCase()}
+                      </option>
+                    ))
+                  ) : (
+                    CATEGORY_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt.charAt(0) + opt.slice(1).toLowerCase()}
+                      </option>
+                    ))
+                  )}
                 </select>
                 {errors.category && (
                   <p className="text-xs text-error-500" role="alert">

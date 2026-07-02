@@ -11,7 +11,8 @@ export type DashboardTab =
   | "wallet"
   | "team"
   | "settings"
-  | "create-service";
+  | "create-service"
+  | "categories";
 
 interface DashboardState {
   activeTab: DashboardTab;

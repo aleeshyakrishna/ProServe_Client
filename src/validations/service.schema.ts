@@ -18,7 +18,7 @@ export const CreateServiceFormSchema = z.object({
   description: z
     .string()
     .min(5, "Please provide a detailed description (min 5 characters)"),
-  category: z.enum(CATEGORY_OPTIONS),
+  category: z.string().min(1, "Please select a category"),
   price: z
     .string()
     .min(1, "Base price is required")

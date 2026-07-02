@@ -18,7 +18,7 @@ export interface DashboardService {
   id: string;
   title: string;
   description: string;
-  category: "PLUMBING" | "ELECTRICAL" | "CLEANING" | "SALON" | "CONSULTATION";
+  category: string;
   price: number;
   providerId: string;
   isAvailable: boolean;
@@ -71,7 +71,7 @@ export const DashboardServiceApi = {
   async createService(data: {
     title: string;
     description: string;
-    category: "PLUMBING" | "ELECTRICAL" | "CLEANING" | "SALON" | "CONSULTATION";
+    category: string;
     price: number;
     providerId: string;
     isAvailable: boolean;

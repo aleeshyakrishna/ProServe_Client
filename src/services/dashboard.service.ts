@@ -64,4 +64,19 @@ export const DashboardServiceApi = {
     );
     return response.data.data;
   },
+
+  /**
+   * Register a new service offering.
+   */
+  async createService(data: {
+    title: string;
+    description: string;
+    category: "PLUMBING" | "ELECTRICAL" | "CLEANING" | "SALON" | "CONSULTATION";
+    price: number;
+    providerId: string;
+    isAvailable: boolean;
+  }): Promise<DashboardService> {
+    const response = await api.post<ApiResponse<DashboardService>>("/api/services", data);
+    return response.data.data;
+  },
 };

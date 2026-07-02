@@ -10,7 +10,8 @@ export type DashboardTab =
   | "reviews"
   | "wallet"
   | "team"
-  | "settings";
+  | "settings"
+  | "create-service";
 
 interface DashboardState {
   activeTab: DashboardTab;

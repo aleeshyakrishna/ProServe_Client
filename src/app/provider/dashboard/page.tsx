@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useDashboardStore } from "@/features/provider-dashboard/store/useDashboardStore";
 import { OverviewTab } from "@/features/provider-dashboard/components/OverviewTab";
+import { CreateServiceForm } from "@/features/provider-dashboard/components/CreateServiceForm";
+import { ServicesTab } from "@/features/provider-dashboard/components/ServicesTab";
 
 // ------ Tab Content Controller ----------------------------------------------
 
@@ -13,6 +15,9 @@ export default function ProviderDashboardPage() {
     switch (activeTab) {
       case "overview":
         return <OverviewTab />;
+      
+      case "create-service":
+        return <CreateServiceForm />;
       
       case "bookings":
         return (
@@ -25,14 +30,7 @@ export default function ProviderDashboardPage() {
         );
 
       case "services":
-        return (
-          <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-[var(--border-subtle)] rounded-3xl p-8 text-center bg-[var(--surface-card)] animate-fade-in">
-            <span className="text-sm font-semibold text-[var(--text-primary)] mb-1">Services Module</span>
-            <p className="text-xs text-[var(--text-secondary)] max-w-sm leading-relaxed">
-              Manage service listings, customize pricing tiers, allocate duration slots, and customize coverage radius maps across the UAE.
-            </p>
-          </div>
-        );
+        return <ServicesTab />;
 
       case "calendar":
         return (

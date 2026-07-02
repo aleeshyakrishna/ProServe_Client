@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin, Clock, Star, ShieldCheck, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -6,6 +8,8 @@ import { Rating } from "@/components/common/rating";
 import { formatCurrency } from "@/lib/utils";
 import { POPULAR_SERVICES } from "@/constants";
 import type { Service } from "@/types";
+import * as React from "react";
+import api from "@/lib/axios";
 
 // ------ Service Card ----------------------------------------
 
@@ -157,6 +161,63 @@ function ServiceCard({ service }: { service: Service }) {
 // ------ Section ---------------------------------------------
 
 export function PopularServicesSection() {
+  const [servicesList, setServicesList] = React.useState<Service[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadServices() {
+      try {
+        const response = await api.get("/api/services");
+        const rawServices = response.data.data;
+
+        if (Array.isArray(rawServices) && rawServices.length > 0) {
+          const normalized: Service[] = rawServices.map((item: any) => ({
+            id: item.id,
+            providerId: item.providerId,
+            provider: {
+              id: item.providerId,
+              businessName: "ProTech UAE Provider",
+              avatarUrl: null,
+              rating: 4.9,
+              reviewCount: 18,
+              isVerified: true,
+            },
+            categoryId: item.category.toLowerCase(),
+            category: {
+              id: item.category.toLowerCase(),
+              name: item.category.charAt(0) + item.category.slice(1).toLowerCase(),
+              slug: item.category.toLowerCase(),
+            },
+            title: item.title,
+            description: item.description,
+            imageUrl: null,
+            priceFrom: item.price,
+            priceTo: null,
+            pricingType: "fixed",
+            currency: "AED",
+            duration: "1-2 hours",
+            isActive: item.isAvailable,
+            isFeatured: true,
+            rating: 4.8,
+            reviewCount: 15,
+            createdAt: new Date().toISOString(),
+          }));
+          setServicesList(normalized);
+        } else {
+          // Fallback to static mock data if DB has no services
+          setServicesList(POPULAR_SERVICES);
+        }
+      } catch (err) {
+        console.error("Failed to load home page services:", err);
+        setServicesList(POPULAR_SERVICES);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadServices();
+  }, []);
+
   return (
     <section
       className="section-padding"
@@ -173,7 +234,7 @@ export function PopularServicesSection() {
               Popular Services
             </h2>
             <p className="text-[var(--text-secondary)] text-base">
-              Handpicked by our customers. Every service comes with a satisfaction guarantee.
+              Handpicked by our UAE customers. Every service comes with a satisfaction guarantee.
             </p>
           </div>
 
@@ -196,7 +257,7 @@ export function PopularServicesSection() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           aria-label="Popular services"
         >
-          {POPULAR_SERVICES.map((service) => (
+          {servicesList.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}
         </div>

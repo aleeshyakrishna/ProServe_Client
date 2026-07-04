@@ -143,58 +143,6 @@ export function HowItWorksSection() {
           })}
         </div>
 
-        {/* Guarantee strip */}
-        <div className="relative rounded-3xl overflow-hidden border border-white/10">
-          {/* Glass base */}
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/80 via-navy-900/80 to-indigo-950/80" />
-          <div className="absolute inset-0 bg-white/[0.02]" />
-          {/* Glow accents */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-48 w-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 h-48 w-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6 p-7 lg:p-8">
-            <div className="text-center sm:text-left space-y-1">
-              <div className="flex items-center gap-2 justify-center sm:justify-start mb-2">
-                <ShieldCheck size={18} className="text-emerald-400" />
-                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
-                  ProServe Guarantee
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-white">
-                100% Satisfaction or Your Money Back
-              </h3>
-              <p className="text-sm text-navy-300 max-w-lg">
-                Not happy with the result? We&apos;ll arrange a re-do at no extra cost — or issue a full refund. No questions asked.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 shrink-0 bg-white/5 border border-white/10 rounded-2xl p-4">
-              <div className="flex -space-x-2.5">
-                {["FA", "AK", "MB"].map((initials) => (
-                  <div
-                    key={initials}
-                    className="h-9 w-9 rounded-full ring-2 ring-navy-950 bg-gradient-to-br from-navy-600 to-navy-800 flex items-center justify-center text-[9px] font-bold text-white select-none"
-                    aria-hidden="true"
-                  >
-                    {initials}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <svg key={i} className="h-3 w-3 fill-amber-400 text-amber-400" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-[10px] text-navy-300 mt-0.5 font-semibold whitespace-nowrap">
-                  4.9/5 · 50,000+ customers
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

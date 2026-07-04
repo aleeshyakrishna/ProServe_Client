@@ -1,190 +1,274 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Quote, Star, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Rating } from "@/components/common/rating";
 import { TESTIMONIALS } from "@/constants";
 import { formatDate } from "@/lib/utils";
 
-// ------ Testimonial Card ------------------------------------
+// ------ Helpers ------------------------------------------------
+
+function getInitials(fullName: string) {
+  return fullName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+const AVATAR_GRADIENTS = [
+  "from-navy-700 via-navy-800 to-navy-950",
+  "from-emerald-600 via-emerald-700 to-emerald-900",
+  "from-gold-500 via-gold-600 to-gold-800",
+];
+
+// ------ Testimonial Card ---------------------------------------
 
 function TestimonialCard({
   review,
-  isActive,
+  position, // -1 = left, 0 = center, 1 = right
+  index,
 }: {
   review: (typeof TESTIMONIALS)[number];
-  isActive: boolean;
+  position: -1 | 0 | 1;
+  index: number;
 }) {
+  const isCenter = position === 0;
+  const initials = getInitials(review.customer.fullName);
+  const gradient = AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length];
+
   return (
-    <motion.div
-      key={review.id}
-      initial={{ opacity: 0, x: 30 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -30 }}
-      transition={{ duration: 0.35, ease: [0, 0, 0.2, 1] }}
+    <div
       className={cn(
-        "flex flex-col gap-6 p-8 rounded-3xl",
-        "bg-[var(--surface-card)] border border-[var(--border-subtle)]",
-        "shadow-lg max-w-2xl mx-auto",
+        "relative flex flex-col gap-5 rounded-3xl transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] select-none",
+        isCenter
+          ? [
+              "p-8 bg-navy-950 text-white shadow-2xl z-20 scale-100",
+              "border border-white/10",
+            ]
+          : [
+              "p-6 bg-white border border-[var(--border-subtle)] shadow-sm z-10 scale-95 opacity-70",
+            ]
       )}
       aria-label={`Review by ${review.customer.fullName}`}
     >
-      {/* Quote icon */}
-      <Quote
-        size={36}
-        className="text-gold-400 fill-gold-100 -mb-2"
-        aria-hidden="true"
-      />
+      {/* Decorative blob for center card */}
+      {isCenter && (
+        <div className="absolute -top-6 -right-6 h-28 w-28 rounded-full bg-emerald-500/15 blur-2xl pointer-events-none" />
+      )}
 
-      {/* Rating */}
-      <Rating value={review.rating} size="md" />
+      {/* Top row: Quote icon + Rating */}
+      <div className="flex items-start justify-between gap-2 relative z-10">
+        <div
+          className={cn(
+            "h-9 w-9 rounded-xl flex items-center justify-center shrink-0",
+            isCenter ? "bg-white/10" : "bg-emerald-50"
+          )}
+        >
+          <Quote
+            size={16}
+            className={cn(
+              isCenter ? "text-emerald-400 fill-emerald-400/30" : "text-emerald-600 fill-emerald-100"
+            )}
+          />
+        </div>
+        <Rating value={review.rating} size="sm" />
+      </div>
 
       {/* Title */}
-      <h3 className="text-lg lg:text-xl font-bold text-[var(--text-primary)] leading-snug">
-        "{review.title}"
+      <h3
+        className={cn(
+          "font-bold leading-snug relative z-10",
+          isCenter ? "text-base text-white" : "text-sm text-[var(--text-primary)]"
+        )}
+      >
+        &ldquo;{review.title}&rdquo;
       </h3>
 
       {/* Body */}
-      <p className="text-[var(--text-secondary)] leading-relaxed text-balance">
+      <p
+        className={cn(
+          "leading-relaxed flex-1 relative z-10",
+          isCenter ? "text-sm text-navy-200" : "text-xs text-[var(--text-secondary)]"
+        )}
+      >
         {review.body}
       </p>
 
-      {/* Author */}
-      <div className="flex items-center gap-4 pt-2 border-t border-[var(--border-subtle)]">
-        {/* Avatar */}
-        <div
-          className="h-12 w-12 rounded-full bg-gradient-to-br from-navy-700 to-navy-900 flex items-center justify-center text-white font-bold shrink-0"
-          aria-hidden="true"
-        >
-          {review.customer.fullName
-            .split(" ")
-            .map((n: string) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2)}
-        </div>
+      {/* Divider */}
+      <div
+        className={cn(
+          "h-px",
+          isCenter ? "bg-white/10" : "bg-[var(--border-subtle)]"
+        )}
+      />
 
-        <div>
-          <p className="font-semibold text-[var(--text-primary)]">
+      {/* Author */}
+      <div className="flex items-center gap-3 relative z-10">
+        <div
+          className={cn(
+            "rounded-xl flex items-center justify-center font-bold shrink-0 shadow-md",
+            `bg-gradient-to-br ${gradient}`,
+            isCenter ? "h-11 w-11 text-sm text-white" : "h-9 w-9 text-xs text-white"
+          )}
+        >
+          {initials}
+        </div>
+        <div className="min-w-0">
+          <p
+            className={cn(
+              "font-bold truncate",
+              isCenter ? "text-sm text-white" : "text-xs text-[var(--text-primary)]"
+            )}
+          >
             {review.customer.fullName}
           </p>
-          <p className="text-xs text-[var(--text-tertiary)]">
-            Verified customer · {formatDate(review.createdAt)}
-          </p>
+          <div className={cn("flex items-center gap-1 mt-0.5")}>
+            <CheckCircle2
+              size={10}
+              className={isCenter ? "text-emerald-400" : "text-emerald-500"}
+            />
+            <p
+              className={cn(
+                "text-[10px] font-semibold",
+                isCenter ? "text-navy-300" : "text-[var(--text-tertiary)]"
+              )}
+            >
+              Verified · {formatDate(review.createdAt)}
+            </p>
+          </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-// ------ Section ---------------------------------------------
+// ------ Main Section -------------------------------------------
 
 export function ReviewsSection() {
-  const [current, setCurrent] = React.useState(0);
   const total = TESTIMONIALS.length;
+  const [current, setCurrent] = React.useState(0);
+  const [isAnimating, setIsAnimating] = React.useState(false);
 
-  const prev = () => setCurrent((c) => (c - 1 + total) % total);
-  const next = () => setCurrent((c) => (c + 1) % total);
+  const navigate = React.useCallback(
+    (dir: 1 | -1) => {
+      if (isAnimating) return;
+      setIsAnimating(true);
+      setCurrent((c) => (c + dir + total) % total);
+      setTimeout(() => setIsAnimating(false), 500);
+    },
+    [isAnimating, total]
+  );
 
-  // Auto-advance
+  // Auto-advance every 5 s
   React.useEffect(() => {
-    const timer = setInterval(next, 6000);
-    return () => clearInterval(timer);
-  }, []);
+    const t = setInterval(() => navigate(1), 5000);
+    return () => clearInterval(t);
+  }, [navigate]);
+
+  // Build the 3 visible indices: prev, center, next
+  const prev = (current - 1 + total) % total;
+  const next = (current + 1) % total;
+  const visible = [
+    { review: TESTIMONIALS[prev], position: -1 as const, index: prev },
+    { review: TESTIMONIALS[current], position: 0 as const, index: current },
+    { review: TESTIMONIALS[next], position: 1 as const, index: next },
+  ];
 
   return (
     <section
-      className="section-padding"
+      className="section-padding overflow-hidden bg-[var(--bg-secondary)] border-y border-[var(--border-subtle)]"
       aria-labelledby="reviews-heading"
     >
-      <div className="container-section">
+      <div className="container-section max-w-6xl space-y-12">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-          <p className="text-sm font-semibold text-emerald-600 uppercase tracking-widest">
-            Customer Stories
-          </p>
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-xs font-bold select-none">
+            <Star size={11} className="fill-amber-500 text-amber-500" />
+            <span>4.9 / 5 &nbsp;·&nbsp; 50,000+ Happy Customers</span>
+          </div>
           <h2 id="reviews-heading" className="text-[var(--text-primary)]">
             What Our Customers Say
           </h2>
-          <p className="text-[var(--text-secondary)] text-base">
-            Real reviews from real people. We don't cherry-pick — these are our latest testimonials.
+          <p className="text-[var(--text-secondary)] text-sm">
+            Verified reviews from Dubai, Abu Dhabi, and Sharjah residents — unfiltered and authentic.
           </p>
         </div>
 
         {/* Carousel */}
-        <div className="relative" aria-roledescription="carousel" aria-label="Customer reviews">
-          <AnimatePresence mode="wait">
-            <TestimonialCard
-              key={TESTIMONIALS[current].id}
-              review={TESTIMONIALS[current]}
-              isActive
-            />
-          </AnimatePresence>
+        <div
+          className="relative"
+          aria-roledescription="carousel"
+          aria-label="Customer testimonials"
+        >
+          {/* 3-card layout */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.18fr_1fr] gap-4 items-center">
+            {visible.map(({ review, position, index }) => (
+              <TestimonialCard
+                key={review.id}
+                review={review}
+                position={position}
+                index={index}
+              />
+            ))}
+          </div>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-center gap-4 mt-8">
-            {/* Prev */}
+          {/* Navigation row */}
+          <div className="flex items-center justify-center gap-4 mt-10">
+            {/* Prev button */}
             <button
-              onClick={prev}
+              onClick={() => navigate(-1)}
               className={cn(
-                "h-10 w-10 rounded-full border border-[var(--border-default)]",
-                "bg-[var(--surface-card)] text-[var(--text-secondary)]",
-                "hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]",
-                "transition-colors",
-                "flex items-center justify-center",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700",
+                "h-10 w-10 rounded-full border flex items-center justify-center transition-all duration-200",
+                "border-[var(--border-default)] bg-white text-[var(--text-secondary)]",
+                "hover:bg-navy-950 hover:text-white hover:border-navy-950 hover:scale-105",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700"
               )}
               aria-label="Previous review"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={17} />
             </button>
 
-            {/* Dots */}
-            <div
-              className="flex items-center gap-2"
-              role="tablist"
-              aria-label="Review navigation"
-            >
+            {/* Dot indicators */}
+            <div className="flex items-center gap-2" role="tablist" aria-label="Review navigation">
               {TESTIMONIALS.map((_, i) => (
                 <button
                   key={i}
                   role="tab"
                   aria-selected={i === current}
-                  aria-label={`Review ${i + 1} of ${total}`}
+                  aria-label={`Go to review ${i + 1}`}
                   onClick={() => setCurrent(i)}
                   className={cn(
                     "rounded-full transition-all duration-300",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700",
                     i === current
-                      ? "h-2.5 w-8 bg-navy-900"
-                      : "h-2.5 w-2.5 bg-[var(--border-strong)] hover:bg-[var(--text-disabled)]",
+                      ? "h-2.5 w-8 bg-navy-950"
+                      : "h-2.5 w-2.5 bg-[var(--border-strong)] hover:bg-[var(--text-disabled)]"
                   )}
                 />
               ))}
             </div>
 
-            {/* Next */}
+            {/* Next button */}
             <button
-              onClick={next}
+              onClick={() => navigate(1)}
               className={cn(
-                "h-10 w-10 rounded-full border border-[var(--border-default)]",
-                "bg-[var(--surface-card)] text-[var(--text-secondary)]",
-                "hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]",
-                "transition-colors",
-                "flex items-center justify-center",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700",
+                "h-10 w-10 rounded-full border flex items-center justify-center transition-all duration-200",
+                "border-[var(--border-default)] bg-white text-[var(--text-secondary)]",
+                "hover:bg-navy-950 hover:text-white hover:border-navy-950 hover:scale-105",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700"
               )}
               aria-label="Next review"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={17} />
             </button>
           </div>
 
-          {/* Total review count */}
-          <p className="text-center text-xs text-[var(--text-disabled)] mt-4">
-            Showing {current + 1} of {total} featured reviews
+          {/* Counter */}
+          <p className="text-center text-[10px] text-[var(--text-disabled)] mt-3 font-semibold tracking-widest uppercase">
+            {current + 1} of {total} reviews
           </p>
         </div>
       </div>

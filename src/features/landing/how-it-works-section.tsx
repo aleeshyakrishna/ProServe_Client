@@ -1,120 +1,142 @@
-import { Search, CalendarCheck, Star } from "lucide-react";
+"use client";
+
+import * as React from "react";
+import { Search, CalendarCheck, ShieldCheck, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ------ Steps Data ------------------------------------------
 
 const STEPS = [
   {
-    step: "01",
+    num: "01",
     icon: Search,
     title: "Search & Compare",
     description:
-      "Browse hundreds of verified professionals in your area. Filter by category, price, ratings, and availability to find your perfect match.",
-    color: "text-navy-700",
-    bgColor: "bg-navy-50",
-    borderColor: "border-navy-200",
-    connectorColor: "bg-navy-200",
+      "Browse hundreds of verified professionals in your area. Filter by category, price, ratings, and real-time availability.",
+    accent: "#10b981", // emerald
+    glow: "shadow-emerald-500/30",
+    border: "border-emerald-500/30",
+    iconBg: "bg-emerald-500/10",
+    iconColor: "text-emerald-400",
+    numColor: "text-emerald-500/50",
   },
   {
-    step: "02",
+    num: "02",
     icon: CalendarCheck,
-    title: "Book Instantly",
+    title: "Book in 60 Seconds",
     description:
-      "Select your preferred time slot, provide service details, and confirm your booking in under 60 seconds. No phone calls required.",
-    color: "text-emerald-700",
-    bgColor: "bg-emerald-50",
-    borderColor: "border-emerald-200",
-    connectorColor: "bg-emerald-200",
+      "Pick your time slot and confirm instantly — no phone calls, no back-and-forth. Your booking is secured right away.",
+    accent: "#6366f1", // indigo
+    glow: "shadow-indigo-500/30",
+    border: "border-indigo-500/30",
+    iconBg: "bg-indigo-500/10",
+    iconColor: "text-indigo-400",
+    numColor: "text-indigo-500/50",
   },
   {
-    step: "03",
-    icon: Star,
-    title: "Get It Done & Review",
+    num: "03",
+    icon: ShieldCheck,
+    title: "Get Done. Pay Safely.",
     description:
-      "Your verified professional arrives on time. Pay securely through the platform. Leave a review to help the community.",
-    color: "text-gold-700",
-    bgColor: "bg-gold-50",
-    borderColor: "border-gold-200",
-    connectorColor: "bg-gold-200",
+      "Your vetted pro arrives on time. Payment is held securely and only released once you approve the completed work.",
+    accent: "#f59e0b", // amber
+    glow: "shadow-amber-500/30",
+    border: "border-amber-500/30",
+    iconBg: "bg-amber-500/10",
+    iconColor: "text-amber-400",
+    numColor: "text-amber-500/50",
   },
 ] as const;
 
-// ------ Section ---------------------------------------------
+// ------ Section Component -----------------------------------
 
 export function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="section-padding"
+      className="section-padding relative overflow-hidden bg-navy-950"
       aria-labelledby="how-it-works-heading"
     >
-      <div className="container-section">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute top-0 left-1/4 h-96 w-96 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 h-96 w-96 bg-indigo-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] bg-amber-500/3 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container-section max-w-6xl relative z-10 space-y-16">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-          <p className="text-sm font-semibold text-emerald-600 uppercase tracking-widest">
+        <div className="text-center max-w-2xl mx-auto space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-bold text-white/60 uppercase tracking-widest">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Simple Process
-          </p>
-          <h2 id="how-it-works-heading" className="text-[var(--text-primary)]">
+          </div>
+          <h2 id="how-it-works-heading" className="text-white">
             How ProServe Works
           </h2>
-          <p className="text-[var(--text-secondary)] text-base text-balance">
-            From search to completion in three simple steps. We handle the vetting, 
-            you enjoy the results.
+          <p className="text-navy-300 text-sm leading-relaxed">
+            From search to completion in three simple steps — we handle the vetting so you can enjoy the results.
           </p>
         </div>
 
         {/* Steps */}
-        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-          {/* Connector lines (desktop) */}
-          <div
-            className="hidden md:block absolute top-12 left-[33.33%] right-[33.33%] h-0.5 bg-gradient-to-r from-navy-200 via-emerald-200 to-gold-200"
-            aria-hidden="true"
-          />
-
-          {STEPS.map((step, index) => {
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          {STEPS.map((step, idx) => {
             const Icon = step.icon;
             return (
-              <div
-                key={step.step}
-                className={cn(
-                  "relative flex flex-col items-center text-center gap-5",
-                  "md:items-center",
+              <div key={idx} className="relative group">
+                {/* Connector arrow between cards (desktop) */}
+                {idx < STEPS.length - 1 && (
+                  <div className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 items-center justify-center h-8 w-8">
+                    <ArrowRight size={16} className="text-white/20" />
+                  </div>
                 )}
-              >
-                {/* Step Number + Icon */}
-                <div className="relative flex flex-col items-center gap-3">
-                  {/* Step number */}
-                  <span
-                    className="text-xs font-bold text-[var(--text-disabled)] tracking-[0.2em] uppercase"
-                    aria-label={`Step ${index + 1}`}
-                  >
-                    {step.step}
-                  </span>
 
-                  {/* Icon circle */}
+                <div
+                  className={cn(
+                    "relative h-full flex flex-col gap-6 p-7 rounded-3xl border",
+                    "bg-white/[0.03] backdrop-blur-sm",
+                    step.border,
+                    "transition-all duration-300",
+                    `hover:shadow-xl ${step.glow} hover:bg-white/[0.06] hover:-translate-y-1`
+                  )}
+                >
+                  {/* Decorative glow orb */}
                   <div
+                    className="absolute -top-4 -right-4 h-20 w-20 rounded-full blur-2xl opacity-40 pointer-events-none"
+                    style={{ background: step.accent }}
+                  />
+
+                  {/* Step number (huge background) */}
+                  <span
                     className={cn(
-                      "h-24 w-24 rounded-3xl flex items-center justify-center",
-                      "border-2 shadow-sm",
-                      step.bgColor,
-                      step.borderColor,
-                      "relative z-10 bg-[var(--surface-card)]",
-                      "transition-transform duration-300 hover:scale-105",
+                      "absolute bottom-4 right-5 text-7xl font-black leading-none select-none pointer-events-none",
+                      step.numColor
                     )}
                     aria-hidden="true"
                   >
-                    <Icon size={36} className={step.color} />
-                  </div>
-                </div>
+                    {step.num}
+                  </span>
 
-                {/* Text */}
-                <div className="space-y-2 max-w-xs">
-                  <h3 className="text-lg font-bold text-[var(--text-primary)]">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                    {step.description}
-                  </p>
+                  {/* Icon */}
+                  <div
+                    className={cn(
+                      "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 relative z-10",
+                      step.iconBg
+                    )}
+                  >
+                    <Icon size={22} className={step.iconColor} />
+                  </div>
+
+                  {/* Text */}
+                  <div className="space-y-2 relative z-10 flex-1">
+                    <h3 className="text-base font-bold text-white">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-navy-300 leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
               </div>
             );
@@ -122,38 +144,54 @@ export function HowItWorksSection() {
         </div>
 
         {/* Guarantee strip */}
-        <div className={cn(
-          "mt-16 rounded-2xl p-6 lg:p-8",
-          "bg-navy-950 text-white",
-          "flex flex-col sm:flex-row items-center justify-between gap-6",
-        )}>
-          <div className="text-center sm:text-left">
-            <h3 className="text-lg font-bold mb-1">
-              100% Satisfaction Guarantee
-            </h3>
-            <p className="text-sm text-navy-300">
-              Not happy with the result? We'll arrange a re-do at no extra cost, or issue a full refund.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="flex -space-x-2">
-              {["FA", "AK", "MB"].map((initials) => (
-                <div
-                  key={initials}
-                  className="h-9 w-9 rounded-full ring-2 ring-navy-900 bg-navy-700 flex items-center justify-center text-[10px] font-bold text-white"
-                  aria-hidden="true"
-                >
-                  {initials}
-                </div>
-              ))}
+        <div className="relative rounded-3xl overflow-hidden border border-white/10">
+          {/* Glass base */}
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/80 via-navy-900/80 to-indigo-950/80" />
+          <div className="absolute inset-0 bg-white/[0.02]" />
+          {/* Glow accents */}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-48 w-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 h-48 w-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6 p-7 lg:p-8">
+            <div className="text-center sm:text-left space-y-1">
+              <div className="flex items-center gap-2 justify-center sm:justify-start mb-2">
+                <ShieldCheck size={18} className="text-emerald-400" />
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
+                  ProServe Guarantee
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white">
+                100% Satisfaction or Your Money Back
+              </h3>
+              <p className="text-sm text-navy-300 max-w-lg">
+                Not happy with the result? We&apos;ll arrange a re-do at no extra cost — or issue a full refund. No questions asked.
+              </p>
             </div>
-            <div>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={12} className="fill-gold-400 stroke-gold-400" aria-hidden="true" />
+
+            <div className="flex items-center gap-3 shrink-0 bg-white/5 border border-white/10 rounded-2xl p-4">
+              <div className="flex -space-x-2.5">
+                {["FA", "AK", "MB"].map((initials) => (
+                  <div
+                    key={initials}
+                    className="h-9 w-9 rounded-full ring-2 ring-navy-950 bg-gradient-to-br from-navy-600 to-navy-800 flex items-center justify-center text-[9px] font-bold text-white select-none"
+                    aria-hidden="true"
+                  >
+                    {initials}
+                  </div>
                 ))}
               </div>
-              <p className="text-xs text-navy-400 mt-0.5">Rated 4.9/5 by 50,000+ customers</p>
+              <div>
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg key={i} className="h-3 w-3 fill-amber-400 text-amber-400" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-[10px] text-navy-300 mt-0.5 font-semibold whitespace-nowrap">
+                  4.9/5 · 50,000+ customers
+                </p>
+              </div>
             </div>
           </div>
         </div>

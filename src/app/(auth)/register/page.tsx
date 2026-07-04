@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { Metadata } from "next";
 import { RegisterForm } from "@/components/forms/RegisterForm";
 import { APP_NAME } from "@/constants";
@@ -20,5 +21,13 @@ export const metadata: Metadata = {
 // ------ Page Component --------------------------------------
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  return (
+    <React.Suspense fallback={
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin h-8 w-8 text-emerald-500 border-4 border-solid border-current border-r-transparent rounded-full" />
+      </div>
+    }>
+      <RegisterForm />
+    </React.Suspense>
+  );
 }

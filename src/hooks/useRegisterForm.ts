@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "@/validations/auth.schema";
@@ -10,6 +10,9 @@ import type { RegisterFormData, AuthState } from "@/types/auth";
 
 export function useRegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryRole = searchParams.get("role");
+
   const [authState, setAuthState] = React.useState<AuthState>({
     isLoading: false,
     isSuccess: false,
@@ -29,6 +32,12 @@ export function useRegisterForm() {
     },
     mode: "onTouched",
   });
+
+  React.useEffect(() => {
+    if (queryRole === "provider" || queryRole === "customer") {
+      form.setValue("role", queryRole);
+    }
+  }, [queryRole, form]);
 
   const onSubmit = async (data: RegisterFormData) => {
     setAuthState({ isLoading: true, isSuccess: false, error: null });

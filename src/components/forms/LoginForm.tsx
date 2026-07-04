@@ -21,7 +21,7 @@ export function LoginForm() {
       {/* 1. Header (Welcome back) */}
       <AuthHeader
         title="Welcome Back"
-        subtitle="Sign in to continue managing your services and bookings."
+        subtitle="Your trusted UAE professionals are one tap away. Sign in to manage your bookings, wallet, and more."
       />
 
       {/* 2. Social Login (SSO) */}
@@ -57,7 +57,7 @@ export function LoginForm() {
           <div className="flex items-center justify-between">
             <label
               htmlFor="password-login"
-              className="text-sm font-medium text-neutral-800 dark:text-neutral-200 leading-none"
+              className="text-sm font-medium text-[var(--text-primary)] leading-none"
             >
               Password
             </label>
@@ -90,14 +90,14 @@ export function LoginForm() {
             {...register("rememberMe")}
             disabled={isLoading || isSuccess}
             className={cn(
-              "h-4.5 w-4.5 rounded border-neutral-300 dark:border-neutral-800 text-emerald-600 bg-white dark:bg-neutral-900",
+              "h-4.5 w-4.5 rounded border-[var(--border-default)] text-emerald-600 bg-[var(--surface-card)]",
               "focus-visible:ring-offset-0 focus-visible:ring-2 focus-visible:ring-emerald-500/20",
               "cursor-pointer disabled:opacity-50"
             )}
           />
           <label
             htmlFor="rememberMe"
-            className="text-xs text-neutral-500 dark:text-neutral-400 font-medium select-none cursor-pointer"
+            className="text-xs text-[var(--text-tertiary)] font-medium select-none cursor-pointer"
           >
             Remember me on this device
           </label>

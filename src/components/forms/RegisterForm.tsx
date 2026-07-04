@@ -24,7 +24,7 @@ export function RegisterForm() {
       {/* 1. Header */}
       <AuthHeader
         title="Create Your Account"
-        subtitle="Start booking and managing verified service professionals today."
+        subtitle="Join 50,000+ customers booking verified pros across the UAE. It only takes a minute — no card required."
       />
 
       {/* 2. Google SSO */}
@@ -79,7 +79,7 @@ export function RegisterForm() {
 
         {/* Role Selection Grid */}
         <div className="space-y-2">
-          <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200 block">
+          <span className="text-sm font-medium text-[var(--text-primary)] block">
             I want to join as a
           </span>
           <Controller
@@ -100,7 +100,7 @@ export function RegisterForm() {
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20",
                     value === "customer"
                       ? "border-emerald-500 dark:border-emerald-400 bg-emerald-50/20 dark:bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-semibold"
-                      : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-500 hover:border-neutral-300 hover:text-neutral-700"
+                      : "border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-tertiary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                   )}
                 >
                   <UserCheck size={18} aria-hidden="true" />
@@ -120,7 +120,7 @@ export function RegisterForm() {
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20",
                     value === "provider"
                       ? "border-emerald-500 dark:border-emerald-400 bg-emerald-50/20 dark:bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-semibold"
-                      : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-500 hover:border-neutral-300 hover:text-neutral-700"
+                      : "border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-tertiary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                   )}
                 >
                   <Briefcase size={18} aria-hidden="true" />
@@ -138,7 +138,7 @@ export function RegisterForm() {
         <div className="space-y-1.5">
           <label
             htmlFor="password-register"
-            className="text-sm font-medium text-neutral-800 dark:text-neutral-200 leading-none"
+            className="text-sm font-medium text-[var(--text-primary)] leading-none"
           >
             Create Password
           </label>
@@ -159,7 +159,7 @@ export function RegisterForm() {
         <div className="space-y-1.5">
           <label
             htmlFor="confirmPassword-register"
-            className="text-sm font-medium text-neutral-800 dark:text-neutral-200 leading-none"
+            className="text-sm font-medium text-[var(--text-primary)] leading-none"
           >
             Confirm Password
           </label>
@@ -183,14 +183,14 @@ export function RegisterForm() {
               {...register("acceptTerms")}
               disabled={isLoading || isSuccess}
               className={cn(
-                "h-4.5 w-4.5 mt-0.5 rounded border-neutral-300 dark:border-neutral-800 text-emerald-600 bg-white dark:bg-neutral-900",
+                "h-4.5 w-4.5 mt-0.5 rounded border-[var(--border-default)] text-emerald-600 bg-[var(--surface-card)]",
                 "focus-visible:ring-offset-0 focus-visible:ring-2 focus-visible:ring-emerald-500/20",
                 "cursor-pointer disabled:opacity-50"
               )}
             />
             <label
               htmlFor="acceptTerms"
-              className="text-xs text-neutral-500 dark:text-neutral-400 font-medium select-none cursor-pointer leading-normal"
+              className="text-xs text-[var(--text-tertiary)] font-medium select-none cursor-pointer leading-normal"
             >
               I agree to the{" "}
               <a href="/legal/terms" className="text-emerald-600 font-semibold hover:underline">

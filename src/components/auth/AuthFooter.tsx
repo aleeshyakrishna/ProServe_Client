@@ -13,7 +13,7 @@ interface AuthFooterProps {
 
 export function AuthFooter({ promptText, linkText, linkHref, className }: AuthFooterProps) {
   return (
-    <div className={cn("mt-6 text-center text-xs text-neutral-500 dark:text-neutral-400", className)}>
+    <div className={cn("mt-6 text-center text-xs text-[var(--text-tertiary)]", className)}>
       <span>{promptText} </span>
       <Link
         href={linkHref}

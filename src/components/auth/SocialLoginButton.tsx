@@ -27,9 +27,9 @@ export function SocialLoginButton({
         onClick={onClick}
         className={cn(
           "w-full rounded-xl flex items-center justify-center gap-3",
-          "border border-neutral-200 dark:border-neutral-800",
-          "bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300",
-          "hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:border-neutral-300 dark:hover:border-neutral-700",
+          "border border-[var(--border-default)]",
+          "bg-[var(--surface-card)] text-[var(--text-secondary)]",
+          "hover:bg-[var(--bg-secondary)] hover:border-[var(--border-strong)]",
           "font-semibold text-sm",
           "transition-all duration-150 active:scale-[0.99]"
         )}
@@ -67,9 +67,9 @@ export function SocialLoginButton({
       {/* Elegant SSO Divider */}
       <div className="relative flex items-center justify-center" aria-hidden="true">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-neutral-200 dark:border-neutral-800" />
+          <div className="w-full border-t border-[var(--border-subtle)]" />
         </div>
-        <div className="relative bg-white dark:bg-neutral-900 px-3.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest leading-none">
+        <div className="relative bg-[var(--surface-card)] px-3.5 text-[10px] font-bold text-[var(--text-disabled)] uppercase tracking-widest leading-none">
           Or
         </div>
       </div>

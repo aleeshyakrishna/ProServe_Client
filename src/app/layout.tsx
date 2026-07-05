@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, APP_TAGLINE, APP_URL } from "@/constants";
+import { Preloader } from "@/components/layout/preloader";
 
 // ------ Font Configuration ----------------------------------
 
@@ -115,6 +116,7 @@ export default function RootLayout({
       className={`${inter.variable} ${playfairDisplay.variable} h-full scroll-smooth`}
     >
       <body className="min-h-full flex flex-col antialiased">
+        <Preloader />
         {children}
       </body>
     </html>

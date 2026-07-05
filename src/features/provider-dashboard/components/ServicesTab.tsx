@@ -6,10 +6,13 @@ import { useDashboardStore } from "../store/useDashboardStore";
 import { Plus, Check, X, Tag, Edit, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { CreateServiceForm } from "./CreateServiceForm";
 
 export function ServicesTab() {
   const { services, isLoading } = useProviderDataStore();
   const { setActiveTab } = useDashboardStore();
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -45,7 +48,7 @@ export function ServicesTab() {
           </p>
         </div>
         <Button
-          onClick={() => setActiveTab("create-service")}
+          onClick={() => setIsModalOpen(true)}
           variant="primary"
           size="sm"
           className="flex items-center gap-1"
@@ -64,7 +67,7 @@ export function ServicesTab() {
           <p className="text-xs text-[var(--text-secondary)] max-w-xs leading-relaxed mb-4">
             You haven't added any services yet. Create your first service listing to start receiving bookings.
           </p>
-          <Button onClick={() => setActiveTab("create-service")} variant="primary" size="sm">
+          <Button onClick={() => setIsModalOpen(true)} variant="primary" size="sm">
             List First Service
           </Button>
         </div>
@@ -136,6 +139,16 @@ export function ServicesTab() {
           ))}
         </div>
       )}
+
+      {/* Add Service Modal Overlay */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add Service Listing"
+        description="Register a new service offering to start receiving bookings across the UAE."
+      >
+        <CreateServiceForm onClose={() => setIsModalOpen(false)} />
+      </Modal>
     </div>
   );
 }

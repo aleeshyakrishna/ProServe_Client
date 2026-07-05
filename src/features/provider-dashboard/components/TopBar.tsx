@@ -25,6 +25,7 @@ export function TopBar() {
     toggleMobileSidebar,
     searchQuery,
     setSearchQuery,
+    setServiceModalOpen,
     setActiveTab,
   } = useDashboardStore();
 
@@ -138,7 +139,7 @@ export function TopBar() {
       <div className="flex items-center gap-4">
         {/* Quick booking action shortcut */}
         <button
-          onClick={() => setActiveTab("create-service")}
+          onClick={() => setServiceModalOpen(true)}
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-navy-900 text-white dark:bg-emerald-500 dark:text-white hover:opacity-90 rounded-xl text-xs font-semibold cursor-pointer shadow-sm shadow-navy-900/10"
         >
           <Sparkles size={14} />

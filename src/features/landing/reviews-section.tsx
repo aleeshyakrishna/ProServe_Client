@@ -162,11 +162,11 @@ export function ReviewsSection() {
     [isAnimating, total]
   );
 
-  // Auto-advance every 5 s
+  // Auto-advance every 5 s, resetting on slide changes
   React.useEffect(() => {
     const t = setInterval(() => navigate(1), 5000);
     return () => clearInterval(t);
-  }, [navigate]);
+  }, [current, navigate]);
 
   // Build the 3 visible indices: prev, center, next
   const prev = (current - 1 + total) % total;
@@ -207,7 +207,7 @@ export function ReviewsSection() {
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1.18fr_1fr] gap-4 items-center">
             {visible.map(({ review, position, index }) => (
               <TestimonialCard
-                key={review.id}
+                key={position}
                 review={review}
                 position={position}
                 index={index}

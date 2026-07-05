@@ -6,11 +6,12 @@ import { OverviewTab } from "@/features/provider-dashboard/components/OverviewTa
 import { CreateServiceForm } from "@/features/provider-dashboard/components/CreateServiceForm";
 import { ServicesTab } from "@/features/provider-dashboard/components/ServicesTab";
 import { CategoriesTab } from "@/features/provider-dashboard/components/CategoriesTab";
+import { Modal } from "@/components/ui/modal";
 
 // ------ Tab Content Controller ----------------------------------------------
 
 export default function ProviderDashboardPage() {
-  const { activeTab } = useDashboardStore();
+  const { activeTab, isServiceModalOpen, setServiceModalOpen } = useDashboardStore();
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -111,5 +112,18 @@ export default function ProviderDashboardPage() {
     }
   };
 
-  return <>{renderTabContent()}</>;
+  return (
+    <>
+      {renderTabContent()}
+
+      <Modal
+        isOpen={isServiceModalOpen}
+        onClose={() => setServiceModalOpen(false)}
+        title="Add Service Listing"
+        description="Register a new service offering to start receiving bookings across the UAE."
+      >
+        <CreateServiceForm onClose={() => setServiceModalOpen(false)} />
+      </Modal>
+    </>
+  );
 }

@@ -36,7 +36,7 @@ export function useLoginForm() {
 
       // Redirect based on role returned by the backend
       const primaryRole = result.roles[0]?.toUpperCase();
-      if (primaryRole === "SERVICE_PROVIDER") {
+      if (primaryRole === "SERVICE_PROVIDER" || primaryRole === "PROVIDER") {
         router.push("/provider/dashboard");
       } else {
         router.push("/customer/dashboard");

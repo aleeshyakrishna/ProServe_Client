@@ -41,7 +41,7 @@ export const AuthService = {
     const response = await api.post<ApiResponse<RegisterResponseData>>("/api/auth/register", {
       fullName: data.fullName,
       email: data.email,
-      phone: data.phone,
+      phone: data.phone.replace(/\s+/g, ""),
       password: data.password,
       role: toBackendRole(data.role),
     });

@@ -22,7 +22,7 @@
   --color-navy-300: hsl(222, 26%, 70%);
   --color-navy-200: hsl(222, 24%, 82%);
   --color-navy-100: hsl(222, 22%, 91%);
-  --color-navy-50:  hsl(222, 20%, 96%);
+  --color-navy-50: hsl(222, 20%, 96%);
 
   /* ---- Emerald (Secondary) ---- */
   --color-emerald-950: hsl(158, 80%, 6%);
@@ -35,7 +35,7 @@
   --color-emerald-300: hsl(164, 48%, 66%);
   --color-emerald-200: hsl(165, 46%, 80%);
   --color-emerald-100: hsl(166, 44%, 91%);
-  --color-emerald-50:  hsl(167, 40%, 96%);
+  --color-emerald-50: hsl(167, 40%, 96%);
 
   /* ---- Gold (Accent) ---- */
   --color-gold-900: hsl(38, 80%, 18%);
@@ -47,7 +47,7 @@
   --color-gold-300: hsl(45, 86%, 72%);
   --color-gold-200: hsl(46, 90%, 82%);
   --color-gold-100: hsl(47, 92%, 91%);
-  --color-gold-50:  hsl(48, 90%, 96%);
+  --color-gold-50: hsl(48, 90%, 96%);
 
   /* ---- Neutral (Backgrounds & Surfaces) ---- */
   --color-neutral-950: hsl(220, 14%, 6%);
@@ -60,52 +60,52 @@
   --color-neutral-300: hsl(220, 4%, 78%);
   --color-neutral-200: hsl(220, 4%, 88%);
   --color-neutral-100: hsl(220, 4%, 94%);
-  --color-neutral-50:  hsl(220, 4%, 97%);
+  --color-neutral-50: hsl(220, 4%, 97%);
 
   /* ---- Semantic Colors ---- */
   --color-success-500: hsl(142, 72%, 36%);
   --color-success-100: hsl(142, 72%, 92%);
-  --color-success-50:  hsl(142, 72%, 97%);
+  --color-success-50: hsl(142, 72%, 97%);
 
   --color-warning-500: hsl(38, 92%, 50%);
   --color-warning-100: hsl(38, 92%, 92%);
-  --color-warning-50:  hsl(38, 92%, 97%);
+  --color-warning-50: hsl(38, 92%, 97%);
 
-  --color-error-500:   hsl(0, 72%, 51%);
-  --color-error-100:   hsl(0, 72%, 93%);
-  --color-error-50:    hsl(0, 72%, 97%);
+  --color-error-500: hsl(0, 72%, 51%);
+  --color-error-100: hsl(0, 72%, 93%);
+  --color-error-50: hsl(0, 72%, 97%);
 
-  --color-info-500:    hsl(213, 84%, 52%);
-  --color-info-100:    hsl(213, 84%, 92%);
-  --color-info-50:     hsl(213, 84%, 97%);
+  --color-info-500: hsl(213, 84%, 52%);
+  --color-info-100: hsl(213, 84%, 92%);
+  --color-info-50: hsl(213, 84%, 97%);
 
 
   /* ---- Border Radius ---- */
-  --radius-none:  0px;
-  --radius-sm:    4px;
-  --radius-md:    8px;
-  --radius-lg:    12px;
-  --radius-xl:    16px;
-  --radius-2xl:   20px;
-  --radius-3xl:   28px;
-  --radius-full:  9999px;
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 28px;
+  --radius-full: 9999px;
 
   /* ---- Shadows ---- */
-  --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.04);
-  --shadow-sm:    0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
-  --shadow-md:    0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.08);
-  --shadow-lg:    0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
-  --shadow-xl:    0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06);
-  --shadow-2xl:   0 25px 50px -12px rgb(0 0 0 / 0.18);
-  --shadow-glow-navy:    0 0 30px -5px hsl(222 60% 10% / 0.4);
-  --shadow-glow-gold:    0 0 30px -5px hsl(44 72% 54% / 0.35);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.18);
+  --shadow-glow-navy: 0 0 30px -5px hsl(222 60% 10% / 0.4);
+  --shadow-glow-gold: 0 0 30px -5px hsl(44 72% 54% / 0.35);
   --shadow-glow-emerald: 0 0 30px -5px hsl(162 52% 40% / 0.35);
 
   /* ---- Transitions ---- */
-  --ease-smooth:  cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-in:      cubic-bezier(0.4, 0, 1, 1);
-  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
 }
 
 /* ============================================================
@@ -113,49 +113,49 @@
    ============================================================ */
 
 :root {
-  --bg-primary:       hsl(0, 0%, 100%);
-  --bg-secondary:     hsl(220, 4%, 97%);
-  --bg-tertiary:      hsl(220, 4%, 94%);
+  --bg-primary: hsl(0, 0%, 100%);
+  --bg-secondary: hsl(220, 4%, 97%);
+  --bg-tertiary: hsl(220, 4%, 94%);
 
-  --surface-card:     hsl(0, 0%, 100%);
+  --surface-card: hsl(0, 0%, 100%);
   --surface-elevated: hsl(0, 0%, 100%);
 
-  --text-primary:     hsl(222, 65%, 7%);
-  --text-secondary:   hsl(220, 8%, 26%);
-  --text-tertiary:    hsl(220, 6%, 40%);
-  --text-disabled:    hsl(220, 5%, 54%);
-  --text-inverse:     hsl(0, 0%, 100%);
+  --text-primary: hsl(222, 65%, 7%);
+  --text-secondary: hsl(220, 8%, 26%);
+  --text-tertiary: hsl(220, 6%, 40%);
+  --text-disabled: hsl(220, 5%, 54%);
+  --text-inverse: hsl(0, 0%, 100%);
 
-  --border-subtle:    hsl(220, 4%, 90%);
-  --border-default:   hsl(220, 4%, 84%);
-  --border-strong:    hsl(220, 6%, 70%);
+  --border-subtle: hsl(220, 4%, 90%);
+  --border-default: hsl(220, 4%, 84%);
+  --border-strong: hsl(220, 6%, 70%);
 
-  --brand-primary:    hsl(222, 60%, 10%);
-  --brand-secondary:  hsl(162, 52%, 40%);
-  --brand-accent:     hsl(44, 72%, 54%);
+  --brand-primary: hsl(222, 60%, 10%);
+  --brand-secondary: hsl(162, 52%, 40%);
+  --brand-accent: hsl(44, 72%, 54%);
 }
 
 .dark {
-  --bg-primary:       hsl(222, 65%, 7%);
-  --bg-secondary:     hsl(222, 60%, 10%);
-  --bg-tertiary:      hsl(222, 50%, 14%);
+  --bg-primary: hsl(222, 65%, 7%);
+  --bg-secondary: hsl(222, 60%, 10%);
+  --bg-tertiary: hsl(222, 50%, 14%);
 
-  --surface-card:     hsl(222, 50%, 12%);
+  --surface-card: hsl(222, 50%, 12%);
   --surface-elevated: hsl(222, 44%, 16%);
 
-  --text-primary:     hsl(220, 20%, 96%);
-  --text-secondary:   hsl(220, 12%, 80%);
-  --text-tertiary:    hsl(220, 8%, 62%);
-  --text-disabled:    hsl(220, 6%, 44%);
-  --text-inverse:     hsl(222, 65%, 7%);
+  --text-primary: hsl(220, 20%, 96%);
+  --text-secondary: hsl(220, 12%, 80%);
+  --text-tertiary: hsl(220, 8%, 62%);
+  --text-disabled: hsl(220, 6%, 44%);
+  --text-inverse: hsl(222, 65%, 7%);
 
-  --border-subtle:    hsl(222, 30%, 16%);
-  --border-default:   hsl(222, 28%, 22%);
-  --border-strong:    hsl(222, 24%, 32%);
+  --border-subtle: hsl(222, 30%, 16%);
+  --border-default: hsl(222, 28%, 22%);
+  --border-strong: hsl(222, 24%, 32%);
 
-  --brand-primary:    hsl(222, 60%, 10%);
-  --brand-secondary:  hsl(162, 52%, 40%);
-  --brand-accent:     hsl(44, 72%, 54%);
+  --brand-primary: hsl(222, 60%, 10%);
+  --brand-secondary: hsl(162, 52%, 40%);
+  --brand-accent: hsl(44, 72%, 54%);
 }
 
 /* ============================================================
@@ -163,6 +163,7 @@
    ============================================================ */
 
 @layer base {
+
   *,
   *::before,
   *::after {
@@ -193,17 +194,33 @@
      TYPOGRAPHY SCALE
      ============================================================ */
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
     color: var(--text-primary);
   }
 
-  h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
-  h2 { font-size: clamp(1.5rem, 3.5vw, 2.5rem); }
-  h3 { font-size: clamp(1.25rem, 2.5vw, 1.875rem); }
-  h4 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 2.5vw, 1.875rem);
+  }
+
+  h4 {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+  }
 
   p {
     color: var(--text-secondary);
@@ -285,21 +302,17 @@
 }
 
 .gradient-hero {
-  background: radial-gradient(
-    ellipse 80% 60% at 50% 0%,
-    hsl(222 60% 10% / 0.06) 0%,
-    transparent 70%
-  ),
-  linear-gradient(180deg, hsl(220 4% 97%) 0%, hsl(0 0% 100%) 100%);
+  background: radial-gradient(ellipse 80% 60% at 50% 0%,
+      hsl(222 60% 10% / 0.06) 0%,
+      transparent 70%),
+    linear-gradient(180deg, hsl(220 4% 97%) 0%, hsl(0 0% 100%) 100%);
 }
 
 .dark .gradient-hero {
-  background: radial-gradient(
-    ellipse 80% 60% at 50% 0%,
-    hsl(222 60% 24% / 0.3) 0%,
-    transparent 70%
-  ),
-  linear-gradient(180deg, hsl(222 65% 7%) 0%, hsl(222 65% 7%) 100%);
+  background: radial-gradient(ellipse 80% 60% at 50% 0%,
+      hsl(222 60% 24% / 0.3) 0%,
+      transparent 70%),
+    linear-gradient(180deg, hsl(222 65% 7%) 0%, hsl(222 65% 7%) 100%);
 }
 
 /* ---- Glass morphism ---- */
@@ -314,17 +327,20 @@
 /* ---- Shimmer animation for skeletons ---- */
 
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-tertiary) 25%,
-    var(--border-subtle) 50%,
-    var(--bg-tertiary) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--bg-tertiary) 25%,
+      var(--border-subtle) 50%,
+      var(--bg-tertiary) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -332,8 +348,15 @@
 /* ---- Fade in animation ---- */
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
@@ -343,5 +366,5 @@
 /* ---- Section spacing ---- */
 
 .section-padding {
-  padding-block: clamp(4rem, 8vw, 7rem);
+  padding-block: clamp(4rem, 8vw, 1rem);
 }

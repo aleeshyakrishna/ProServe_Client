@@ -102,6 +102,8 @@ export const viewport: Viewport = {
   ],
 };
 
+import { BookingProvider } from "@/context/BookingContext";
+
 // ------ Root Layout -----------------------------------------
 
 export default function RootLayout({
@@ -117,9 +119,11 @@ export default function RootLayout({
       className={`${inter.variable} ${playfairDisplay.variable} h-full scroll-smooth`}
     >
       <body className="min-h-full flex flex-col antialiased">
-        <Preloader />
-        {children}
-        <AIChatAssistant />
+        <BookingProvider>
+          <Preloader />
+          {children}
+          <AIChatAssistant />
+        </BookingProvider>
       </body>
     </html>
   );

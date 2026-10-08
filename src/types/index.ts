@@ -96,6 +96,9 @@ export interface Booking {
   currency: string;
   notes: string | null;
   address: string;
+  propertyType?: string | null;
+  timeSlot?: string | null;
+  paymentMethod?: string | null;
   createdAt: string;
 }
 

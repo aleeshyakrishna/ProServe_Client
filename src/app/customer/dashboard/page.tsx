@@ -149,6 +149,17 @@ export default function CustomerDashboardPage() {
   const completedBookings = bookings.filter((b) => b.status === "COMPLETED");
   const totalSpent = completedBookings.reduce((sum, b) => sum + (b.price || 0), 0);
 
+  const handleCancelBooking = async (bookingId: string) => {
+    try {
+      await api.put(`/api/bookings/${bookingId}`, { status: "CANCELLED" });
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, status: "CANCELLED" } : b))
+      );
+    } catch (err) {
+      console.error("Failed to cancel booking:", err);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background-default,#0b1120)] text-[var(--text-primary,#f8fafc)] font-sans">
       <Navbar />
@@ -205,14 +216,14 @@ export default function CustomerDashboardPage() {
 
             <div className="flex items-center gap-3">
               <Link
-                href="/services"
+                href="/booking"
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-sm transition-all duration-200 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
               >
                 <Plus size={18} className="stroke-[2.5]" />
                 <span>Book New Service</span>
               </Link>
               <Link
-                href="/services"
+                href="/providers"
                 className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-medium text-sm border border-slate-700/60 transition-all duration-200"
               >
                 <Search size={16} />
@@ -330,15 +341,25 @@ export default function CustomerDashboardPage() {
                         </p>
                       </div>
                       
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-                          booking.status === "CONFIRMED"
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                            : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                        }`}
-                      >
-                        {booking.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                            booking.status === "CONFIRMED"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                          }`}
+                        >
+                          {booking.status}
+                        </span>
+                        {booking.status === "PENDING" && (
+                          <button
+                            onClick={() => handleCancelBooking(booking.id)}
+                            className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-bold hover:bg-red-500/20 transition cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-slate-800/80 text-xs text-slate-300">

@@ -8,6 +8,8 @@ import { ServicesTab } from "@/features/provider-dashboard/components/ServicesTa
 import { CategoriesTab } from "@/features/provider-dashboard/components/CategoriesTab";
 import { Modal } from "@/components/ui/modal";
 
+import { BookingsTab } from "@/features/provider-dashboard/components/BookingsTab";
+
 // ------ Tab Content Controller ----------------------------------------------
 
 export default function ProviderDashboardPage() {
@@ -25,14 +27,7 @@ export default function ProviderDashboardPage() {
         return <CategoriesTab />;
       
       case "bookings":
-        return (
-          <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-[var(--border-subtle)] rounded-3xl p-8 text-center bg-[var(--surface-card)] animate-fade-in">
-            <span className="text-sm font-semibold text-[var(--text-primary)] mb-1">Bookings Module</span>
-            <p className="text-xs text-[var(--text-secondary)] max-w-sm leading-relaxed">
-              This module will host active, upcoming, completed, and priority emergency booking cards, alongside schedule routing filters.
-            </p>
-          </div>
-        );
+        return <BookingsTab />;
 
       case "services":
         return <ServicesTab />;

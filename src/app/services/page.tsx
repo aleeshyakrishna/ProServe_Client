@@ -289,29 +289,10 @@ export default function ServicesPage() {
         {/* ==========================================
             1. HERO SECTION
             ========================================== */}
-        <section
-          className="relative py-16 lg:py-24 overflow-hidden gradient-hero text-center"
-          aria-labelledby="hero-title"
-        >
-          <div className="container-section flex flex-col items-center max-w-4xl relative z-10 gap-6">
-            <Badge variant="secondary" className="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-100 animate-fade-in">
-              Verified & Safe UAE Home Services
-            </Badge>
-
-            <h1
-              id="hero-title"
-              className="text-display font-extrabold text-[var(--text-primary)] tracking-tight leading-none text-balance"
-            >
-              Professional Home Services, <br />
-              <span className="text-emerald-600">On-Demand.</span>
-            </h1>
-
-            <p className="text-[var(--text-secondary)] text-base lg:text-lg max-w-2xl text-balance">
-              Book certified plumbers, electricians, cleaners, and wellness specialists in Dubai, Abu Dhabi, and Sharjah instantly.
-            </p>
-
-            {/* Search Bar Input */}
-            <div className="w-full max-w-xl relative mt-4">
+        {/* Clean Compact Top Search Bar */}
+        <div className="!pt-24 pb-6 bg-white border-[var(--border-subtle)]">
+          <div className="container-section max-w-4xl space-y-4">
+            <div className="w-full relative">
               <label htmlFor="search-services-input" className="sr-only">
                 Search for any service
               </label>
@@ -325,7 +306,7 @@ export default function ServicesPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search home cleaning, AC repair, plumbing..."
                 className={cn(
-                  "w-full h-14 pl-12 pr-4 rounded-2xl bg-white shadow-md border border-[var(--border-subtle)]",
+                  "w-full h-12 pl-12 pr-16 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]",
                   "text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]",
                   "focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500",
                   "transition-all duration-200"
@@ -334,39 +315,21 @@ export default function ServicesPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-4 inset-y-0 text-xs font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+                  className="absolute right-4 inset-y-0 text-xs font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   Clear
                 </button>
               )}
             </div>
 
-            {/* Quick Suggestions */}
-            <div className="flex flex-wrap justify-center items-center gap-2 mt-2 text-xs">
-              <span className="text-[var(--text-tertiary)] font-medium">Popular:</span>
-              {categories.slice(0, 4).map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setSelectedCategory(cat.slug);
-                    setSearchQuery("");
-                  }}
-                  className={cn(
-                    "px-3 py-1.5 rounded-full border text-[var(--text-secondary)] hover:text-navy-900 hover:border-navy-200 transition-colors",
-                    selectedCategory === cat.slug ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-[var(--border-subtle)]"
-                  )}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
+            {/* Quick Popular Pills */}
           </div>
-        </section>
+        </div>
 
         {/* ==========================================
             2. SERVICES FILTER & LISTING SECTION
             ========================================== */}
-        <section className="section-padding bg-white" aria-label="Services listing">
+        <section className=" bg-white" aria-label="Services listing">
           <div className="container-section">
             <div className="flex flex-col lg:flex-row gap-8">
               {/* Sidebar Filters */}
@@ -527,8 +490,8 @@ export default function ServicesPage() {
                         service.pricingType === "quoted"
                           ? "Custom Quote"
                           : service.priceTo
-                          ? `${formatCurrency(service.priceFrom)} – ${formatCurrency(service.priceTo)}`
-                          : `From ${formatCurrency(service.priceFrom)}`;
+                            ? `${formatCurrency(service.priceFrom)} – ${formatCurrency(service.priceTo)}`
+                            : `From ${formatCurrency(service.priceFrom)}`;
 
                       return (
                         <article
@@ -646,7 +609,7 @@ export default function ServicesPage() {
 
                             {/* CTA Action button */}
                             <Link
-                              href={`/services/${service.id}`}
+                              href={`/booking?serviceId=${service.id}&providerId=${service.providerId}`}
                               className={cn(
                                 "mt-1 flex items-center justify-center w-full h-10 rounded-xl font-bold text-xs transition-all duration-200",
                                 "bg-navy-50 text-navy-900 border border-navy-100",

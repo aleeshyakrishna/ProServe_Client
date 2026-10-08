@@ -457,15 +457,15 @@ export default function ProviderProfilePage({ params }: PageProps) {
 
             {/* Quick Action Booking CTA */}
             <div className="w-full md:w-auto shrink-0 flex flex-col sm:flex-row gap-3 pt-2 md:pt-0">
-              <a
-                href="#services-section"
+              <Link
+                href={`/booking?providerId=${provider.id}`}
                 className={cn(
                   buttonVariants({ variant: "primary", size: "lg" }),
                   "w-full md:w-auto font-bold text-xs"
                 )}
               >
                 Book Appointment
-              </a>
+              </Link>
               <a
                 href="#contact-section"
                 className={cn(
@@ -562,7 +562,7 @@ export default function ProviderProfilePage({ params }: PageProps) {
                             </p>
                           </div>
                           <Link
-                            href={`/services/${svc.id}`}
+                            href={`/booking?serviceId=${svc.id}&providerId=${provider.id}`}
                             className={cn(
                               buttonVariants({ variant: "outline", size: "sm" }),
                               "font-bold text-[10px]"

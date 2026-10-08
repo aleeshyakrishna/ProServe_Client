@@ -17,12 +17,38 @@ const POPULAR_SEARCHES = [
   "Deep Cleaning",
 ];
 
+import { useRouter } from "next/navigation";
+
 function HeroSearchBar() {
+  const router = useRouter();
   const [query, setQuery] = React.useState("");
   const [location, setLocation] = React.useState("Dubai");
 
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const params = new URLSearchParams();
+    if (query.trim()) {
+      params.set("search", query.trim());
+    }
+    if (location) {
+      params.set("location", location);
+    }
+    router.push(`/services?${params.toString()}`);
+  };
+
+  const handleTagClick = (term: string) => {
+    setQuery(term);
+    const params = new URLSearchParams();
+    params.set("search", term);
+    if (location) {
+      params.set("location", location);
+    }
+    router.push(`/services?${params.toString()}`);
+  };
+
   return (
-    <div
+    <form
+      onSubmit={handleSearch}
       className={cn(
         "w-full max-w-2xl",
         "rounded-2xl bg-white shadow-xl shadow-navy-900/10",
@@ -49,14 +75,21 @@ function HeroSearchBar() {
         {/* Location */}
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors sm:w-44 cursor-pointer">
           <MapPin size={16} className="text-emerald-500 shrink-0" aria-hidden="true" />
-          <span className="text-sm font-medium text-[var(--text-primary)] flex-1 whitespace-nowrap">
-            {location}
-          </span>
-          <ChevronDown size={14} className="text-[var(--text-tertiary)] shrink-0" aria-hidden="true" />
+          <select
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="w-full bg-transparent text-sm font-medium text-[var(--text-primary)] focus:outline-none cursor-pointer appearance-none pr-4"
+            aria-label="Select location"
+          >
+            <option value="Dubai">Dubai</option>
+            <option value="Abu Dhabi">Abu Dhabi</option>
+            <option value="Sharjah">Sharjah</option>
+          </select>
+          <ChevronDown size={14} className="text-[var(--text-tertiary)] shrink-0 -ml-4 pointer-events-none" aria-hidden="true" />
         </div>
 
         {/* CTA */}
-        <Button variant="primary" size="lg" className="sm:w-auto w-full shrink-0 rounded-xl">
+        <Button type="submit" variant="primary" size="lg" className="sm:w-auto w-full shrink-0 rounded-xl cursor-pointer">
           Search
         </Button>
       </div>
@@ -68,11 +101,11 @@ function HeroSearchBar() {
           <button
             key={term}
             type="button"
-            onClick={() => setQuery(term)}
+            onClick={() => handleTagClick(term)}
             className={cn(
               "text-xs text-[var(--text-tertiary)] hover:text-navy-800",
               "hover:underline underline-offset-2",
-              "transition-colors duration-150",
+              "transition-colors duration-150 cursor-pointer",
               "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-navy-700 rounded",
             )}
           >
@@ -80,7 +113,7 @@ function HeroSearchBar() {
           </button>
         ))}
       </div>
-    </div>
+    </form>
   );
 }
 

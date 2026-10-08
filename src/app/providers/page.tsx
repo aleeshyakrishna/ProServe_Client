@@ -189,7 +189,7 @@ export default function ProvidersListPage() {
               isVerified: seeded?.isVerified || item.provider.isVerified || false,
               isFeatured: seeded?.isFeatured || false,
               categories: seeded?.categories || [
-                finalCats.find(c => c.slug === item.category.toLowerCase()) || 
+                finalCats.find(c => c.slug === item.category.toLowerCase()) ||
                 { id: item.category.toLowerCase(), name: item.category.charAt(0) + item.category.slice(1).toLowerCase(), slug: item.category.toLowerCase(), description: "", iconName: "wrench", serviceCount: 0, imageUrl: null }
               ],
               location: seeded?.location || "Dubai, UAE",
@@ -201,7 +201,7 @@ export default function ProvidersListPage() {
 
       // 3. Build unified provider list
       const providerMap = { ...discoveredProviders };
-      
+
       // Seed featured providers if not already discovered
       FEATURED_PROVIDERS.forEach(prov => {
         if (!providerMap[prov.id]) {
@@ -309,32 +309,10 @@ export default function ProvidersListPage() {
       <Navbar />
 
       <main id="main-content" className="flex-grow pt-16 lg:pt-18 bg-[var(--bg-primary)]">
-        {/* ==========================================
-            1. HERO SECTION
-            ========================================== */}
-        <section
-          className="relative py-16 lg:py-24 overflow-hidden gradient-hero text-center"
-          aria-labelledby="hero-title"
-        >
-          <div className="container-section flex flex-col items-center max-w-4xl relative z-10 gap-6">
-            <Badge variant="secondary" className="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-100 select-none">
-              Background-Checked & Insured
-            </Badge>
-
-            <h1
-              id="hero-title"
-              className="text-display font-extrabold text-[var(--text-primary)] tracking-tight leading-none text-balance"
-            >
-              Verified Service Providers, <br />
-              <span className="text-emerald-600">At Your Service.</span>
-            </h1>
-
-            <p className="text-[var(--text-secondary)] text-base lg:text-lg max-w-2xl text-balance">
-              Connect with top-rated cleaners, electricians, plumbers, and home specialists in Dubai, Abu Dhabi, and Sharjah.
-            </p>
-
-            {/* Main Search Bar */}
-            <div className="w-full max-w-xl relative mt-4">
+        {/* Clean Compact Top Search Bar */}
+        <div className="!pt-24 pb-6 bg-white border-[var(--border-subtle)]">
+          <div className="container-section max-w-4xl">
+            <div className="w-full relative">
               <label htmlFor="search-providers-input" className="sr-only">
                 Search providers by name or bio keyword
               </label>
@@ -346,9 +324,9 @@ export default function ProvidersListPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by provider name or keyword..."
+                placeholder="Search by provider name, specialty, or keyword..."
                 className={cn(
-                  "w-full h-14 pl-12 pr-4 rounded-2xl bg-white shadow-md border border-[var(--border-subtle)]",
+                  "w-full h-12 pl-12 pr-16 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]",
                   "text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]",
                   "focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500",
                   "transition-all duration-200"
@@ -364,18 +342,18 @@ export default function ProvidersListPage() {
               )}
             </div>
           </div>
-        </section>
+        </div>
 
         {/* ==========================================
             2. PROVIDERS LISTINGS GRID & FILTERS
             ========================================== */}
-        <section className="section-padding bg-white" aria-label="Providers directory listings">
+        <section className=" bg-white" aria-label="Providers directory listings">
           <div className="container-section">
             <div className="flex flex-col lg:flex-row gap-8">
-              
+
               {/* Sidebar Filters */}
               <aside className="w-full lg:w-64 lg:min-w-[256px] lg:max-w-[256px] shrink-0 flex flex-col gap-6" aria-label="Filters">
-                
+
                 {/* Active filters check block */}
                 {(selectedCategory !== "all" || selectedLocation !== "all" || minRating > 0 || searchQuery) && (
                   <div className="p-4 rounded-xl bg-navy-50/50 border border-navy-100 flex items-center justify-between">
@@ -495,7 +473,7 @@ export default function ProvidersListPage() {
 
               {/* Main Panel Listings */}
               <div className="flex-1 min-w-0 flex flex-col gap-6">
-                
+
                 {/* Result header count & Sorting */}
                 <div className="flex items-center justify-between pb-4 border-b border-[var(--border-subtle)]">
                   <div className="space-y-1">
@@ -651,17 +629,27 @@ export default function ProvidersListPage() {
                           </div>
                         </div>
 
-                        {/* View profile CTA */}
-                        <Link
-                          href={`/providers/${prov.id}`}
-                          className={cn(
-                            buttonVariants({ variant: "outline", size: "md" }),
-                            "w-full font-bold text-xs"
-                          )}
-                        >
-                          View Profile
-                          <ChevronRight size={14} className="ml-1" />
-                        </Link>
+                        {/* Action CTAs */}
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/booking?providerId=${prov.id}`}
+                            className={cn(
+                              buttonVariants({ variant: "primary", size: "md" }),
+                              "flex-1 font-bold text-xs text-center"
+                            )}
+                          >
+                            Book Service
+                          </Link>
+                          <Link
+                            href={`/providers/${prov.id}`}
+                            className={cn(
+                              buttonVariants({ variant: "outline", size: "md" }),
+                              "flex-1 font-bold text-xs text-center"
+                            )}
+                          >
+                            View Profile
+                          </Link>
+                        </div>
                       </article>
                     ))}
                   </div>

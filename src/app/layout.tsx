@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, APP_TAGLINE, APP_URL } from "@/constants";
 import { Preloader } from "@/components/layout/preloader";
+import { AIChatAssistant } from "@/components/ai/AIChatAssistant";
 
 // ------ Font Configuration ----------------------------------
 
@@ -118,6 +119,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col antialiased">
         <Preloader />
         {children}
+        <AIChatAssistant />
       </body>
     </html>
   );

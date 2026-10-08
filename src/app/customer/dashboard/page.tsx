@@ -28,6 +28,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+import { tokenStorage } from "@/lib/axios";
+
 interface UserProfile {
   fullName?: string;
   phone?: string;
@@ -36,6 +39,10 @@ interface UserProfile {
 }
 
 interface UserData {
+  id?: string;
+  email?: string;
+  name?: string;
+  role?: string;
   user?: {
     id: string;
     email: string;
@@ -72,6 +79,7 @@ const CATEGORY_ICON_MAP: Record<string, React.ComponentType<{ size?: number; cla
 };
 
 export default function CustomerDashboardPage() {
+  const router = useRouter();
   const [userData, setUserData] = React.useState<UserData | null>(null);
   const [categories, setCategories] = React.useState<CategoryItem[]>([]);
   const [bookings, setBookings] = React.useState<BookingItem[]>([]);
@@ -83,11 +91,23 @@ export default function CustomerDashboardPage() {
       setIsLoading(true);
       setError(null);
 
+      const token = tokenStorage.getAccessToken();
+      if (!token) {
+        tokenStorage.clear();
+        router.push("/login");
+        return;
+      }
+
       try {
         // 1. Fetch current logged-in user profile
-        const userRes = await AuthService.getMe().catch(() => null);
-        if (userRes) {
+        const userRes = await AuthService.getMe();
+        if (userRes && (userRes.id || userRes.email || userRes.name || userRes.user)) {
           setUserData(userRes);
+        } else {
+          // Unauthenticated or invalid token -> Logout & redirect to login
+          tokenStorage.clear();
+          router.push("/login");
+          return;
         }
 
         // 2. Fetch active categories
@@ -103,17 +123,23 @@ export default function CustomerDashboardPage() {
         }
       } catch (err) {
         console.error("Failed to load customer dashboard data:", err);
-        setError("Could not sync latest dashboard details. Please refresh.");
+        tokenStorage.clear();
+        router.push("/login");
       } finally {
         setIsLoading(false);
       }
     }
 
     loadDashboardData();
-  }, []);
+  }, [router]);
 
   // Derived Dynamic Calculations
-  const displayName = userData?.profile?.fullName || userData?.user?.name || "Valued Customer";
+  const displayName =
+    userData?.profile?.fullName ||
+    userData?.name ||
+    userData?.user?.name ||
+    userData?.email?.split("@")[0] ||
+    "Valued Customer";
   const displayCity = userData?.profile?.city || "Dubai, UAE";
   const userAvatar =
     userData?.profile?.avatar ||

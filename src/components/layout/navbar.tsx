@@ -356,19 +356,29 @@ export function Navbar() {
   React.useEffect(() => {
     const token = tokenStorage.getAccessToken();
     if (token) {
-      setIsLoggedIn(true);
       AuthService.getMe()
         .then((res) => {
-          if (res) {
+          if (res && (res.id || res.email || res.name || res.profile)) {
+            setIsLoggedIn(true);
             setUser({
-              name: res.profile?.fullName || res.user?.name || "Customer",
-              email: res.user?.email || "",
-              role: res.roles?.[0] || res.user?.role || "CUSTOMER",
+              name: res.profile?.fullName || res.name || res.user?.name || res.email?.split("@")[0] || "Customer",
+              email: res.email || res.user?.email || "",
+              role: res.roles?.[0] || res.role || res.user?.role || "CUSTOMER",
               avatar: res.profile?.avatar,
             });
+          } else {
+            // Token is invalid / user not found -> Logout
+            tokenStorage.clear();
+            setIsLoggedIn(false);
+            setUser(null);
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          // Token expired or invalid session -> Logout
+          tokenStorage.clear();
+          setIsLoggedIn(false);
+          setUser(null);
+        });
     } else {
       setIsLoggedIn(false);
       setUser(null);

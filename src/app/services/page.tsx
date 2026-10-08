@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Search,
   Wrench,
@@ -17,21 +18,34 @@ import {
   Clock,
   ShieldCheck,
   SlidersHorizontal,
+  MapPin,
   ThumbsUp,
   Lock,
-  UserCheck
+  UserCheck,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Rating } from "@/components/common/rating";
-import { formatCurrency } from "@/lib/utils";
-import { POPULAR_SERVICES, CATEGORIES } from "@/constants";
+import { POPULAR_SERVICES, CATEGORIES, FEATURED_PROVIDERS } from "@/constants";
 import type { Service, Category } from "@/types";
 import api from "@/lib/axios";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { EmptyState, ErrorState } from "@/components/common/empty-state";
 import { FAQSection } from "@/components/common/FAQSection";
+
+// ------ Location List ----------------------------------------
+
+const LOCATIONS = [
+  { value: "all", label: "All Cities / Areas" },
+  { value: "Dubai", label: "Dubai" },
+  { value: "Abu Dhabi", label: "Abu Dhabi" },
+  { value: "Sharjah", label: "Sharjah" },
+  { value: "Dubai Marina", label: "Dubai Marina" },
+  { value: "Business Bay", label: "Business Bay" },
+  { value: "Jumeirah", label: "Jumeirah" },
+  { value: "Al Barsha", label: "Al Barsha" },
+];
 
 // ------ Icon Map -------------------------------------------
 
@@ -126,19 +140,100 @@ interface RawService {
   isAvailable: boolean;
 }
 
-// ------ Main Component -------------------------------------
+// ------ Inner Content Component (Consumes useSearchParams) --
 
-export default function ServicesPage() {
+function ServicesContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   // Data State
   const [services, setServices] = React.useState<Service[]>([]);
   const [categories, setCategories] = React.useState<Category[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isError, setIsError] = React.useState(false);
 
-  // Interaction State
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
+  // Read initial interaction states from URL parameters
+  const initialQuery = searchParams.get("search") || searchParams.get("query") || "";
+  const initialCat = searchParams.get("category") || "all";
+  const initialLoc = searchParams.get("location") || "all";
+
+  const [searchQuery, setSearchQuery] = React.useState(initialQuery);
+  const [selectedCategory, setSelectedCategory] = React.useState<string>(initialCat);
+  const [selectedLocation, setSelectedLocation] = React.useState<string>(initialLoc);
   const [sortBy, setSortBy] = React.useState<string>("popular");
+
+  // Keep state synced when searchParams change from external router pushes
+  React.useEffect(() => {
+    const urlQuery = searchParams.get("search") || searchParams.get("query") || "";
+    const urlCat = searchParams.get("category") || "all";
+    const urlLoc = searchParams.get("location") || "all";
+    setSearchQuery(urlQuery);
+    setSelectedCategory(urlCat);
+    setSelectedLocation(urlLoc);
+  }, [searchParams]);
+
+  // Update URL search parameters
+  const updateUrlParams = (newQuery: string, newCat: string, newLoc: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newQuery.trim()) {
+      params.set("search", newQuery.trim());
+    } else {
+      params.delete("search");
+      params.delete("query");
+    }
+    if (newCat && newCat !== "all") {
+      params.set("category", newCat);
+    } else {
+      params.delete("category");
+    }
+    if (newLoc && newLoc !== "all") {
+      params.set("location", newLoc);
+    } else {
+      params.delete("location");
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  // Debounced URL synchronization for search input typing to avoid _rsc request spam
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      const currentUrlQuery = params.get("search") || params.get("query") || "";
+      if (searchQuery.trim() !== currentUrlQuery.trim()) {
+        if (searchQuery.trim()) {
+          params.set("search", searchQuery.trim());
+        } else {
+          params.delete("search");
+          params.delete("query");
+        }
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchParams, pathname, router]);
+
+  const handleQueryChange = (val: string) => {
+    setSearchQuery(val);
+  };
+
+  const handleCategoryChange = (catSlug: string) => {
+    setSelectedCategory(catSlug);
+    updateUrlParams(searchQuery, catSlug, selectedLocation);
+  };
+
+  const handleLocationChange = (loc: string) => {
+    setSelectedLocation(loc);
+    updateUrlParams(searchQuery, selectedCategory, loc);
+  };
+
+  const handleClearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedLocation("all");
+    updateUrlParams("", "all", "all");
+  };
 
   // Fetch Services & Categories
   const loadData = React.useCallback(async (active = true) => {
@@ -170,39 +265,52 @@ export default function ServicesPage() {
       let finalServices: Service[] = [];
 
       if (Array.isArray(rawServices) && rawServices.length > 0) {
-        finalServices = rawServices.map((item: RawService) => ({
-          id: item.id,
-          providerId: item.providerId,
-          provider: {
-            id: item.providerId,
-            businessName: "ProTech UAE Provider",
-            avatarUrl: null,
-            rating: 4.9,
-            reviewCount: 18,
-            isVerified: true,
-          },
-          categoryId: item.category.toLowerCase(),
-          category: {
-            id: item.category.toLowerCase(),
-            name: item.category.charAt(0) + item.category.slice(1).toLowerCase(),
-            slug: item.category.toLowerCase(),
-          },
-          title: item.title,
-          description: item.description,
-          imageUrl: null,
-          priceFrom: item.price,
-          priceTo: null,
-          pricingType: "fixed",
-          currency: "AED",
-          duration: "1-2 hours",
-          isActive: item.isAvailable,
-          isFeatured: true,
-          rating: 4.8,
-          reviewCount: 15,
-          createdAt: new Date().toISOString(),
-        }));
+        finalServices = rawServices.map((item: RawService) => {
+          const matchedProv = FEATURED_PROVIDERS.find((p) => p.id === item.providerId);
+          return {
+            id: item.id,
+            providerId: item.providerId,
+            provider: {
+              id: item.providerId,
+              businessName: matchedProv?.businessName || "ProTech UAE Provider",
+              avatarUrl: matchedProv?.avatarUrl || null,
+              rating: matchedProv?.rating || 4.9,
+              reviewCount: matchedProv?.reviewCount || 18,
+              isVerified: matchedProv?.isVerified ?? true,
+              location: matchedProv?.location || "Dubai Marina, Dubai",
+            },
+            categoryId: item.category.toLowerCase(),
+            category: {
+              id: item.category.toLowerCase(),
+              name: item.category.charAt(0) + item.category.slice(1).toLowerCase(),
+              slug: item.category.toLowerCase(),
+            },
+            title: item.title,
+            description: item.description,
+            imageUrl: null,
+            priceFrom: item.price,
+            priceTo: null,
+            pricingType: "fixed" as const,
+            currency: "AED",
+            duration: "1-2 hours",
+            isActive: item.isAvailable,
+            isFeatured: true,
+            rating: 4.8,
+            reviewCount: 15,
+            createdAt: new Date().toISOString(),
+          };
+        });
       } else {
-        finalServices = POPULAR_SERVICES;
+        finalServices = POPULAR_SERVICES.map((svc) => {
+          const matchedProv = FEATURED_PROVIDERS.find((p) => p.id === svc.providerId);
+          return {
+            ...svc,
+            provider: {
+              ...svc.provider,
+              location: matchedProv?.location || "Dubai Marina, Dubai",
+            },
+          };
+        });
       }
 
       // 3. Map dynamic service counts to categories
@@ -220,7 +328,18 @@ export default function ServicesPage() {
       console.error("Failed to load services data:", err);
       if (active) {
         setCategories(CATEGORIES);
-        setServices(POPULAR_SERVICES);
+        setServices(
+          POPULAR_SERVICES.map((svc) => {
+            const matchedProv = FEATURED_PROVIDERS.find((p) => p.id === svc.providerId);
+            return {
+              ...svc,
+              provider: {
+                ...svc.provider,
+                location: matchedProv?.location || "Dubai Marina, Dubai",
+              },
+            };
+          })
+        );
         if (POPULAR_SERVICES.length === 0) {
           setIsError(true);
         }
@@ -234,14 +353,11 @@ export default function ServicesPage() {
 
   React.useEffect(() => {
     let active = true;
-
-    // Load data asynchronously to avoid synchronous setState inside render/mount context
     Promise.resolve().then(() => {
       if (active) {
         loadData(active);
       }
     });
-
     return () => {
       active = false;
     };
@@ -254,18 +370,35 @@ export default function ServicesPage() {
     // Filter by Category Tab
     if (selectedCategory !== "all") {
       result = result.filter(
-        (service) => service.category.slug === selectedCategory
+        (service) =>
+          service.category.slug.toLowerCase() === selectedCategory.toLowerCase() ||
+          service.categoryId.toLowerCase() === selectedCategory.toLowerCase()
       );
+    }
+
+    // Filter by Location
+    if (selectedLocation !== "all") {
+      const loc = selectedLocation.toLowerCase();
+      result = result.filter((service) => {
+        const titleMatch = service.title.toLowerCase().includes(loc);
+        const descMatch = service.description.toLowerCase().includes(loc);
+        const busMatch = service.provider?.businessName?.toLowerCase().includes(loc);
+        const providerLocMatch = (service.provider as { location?: string }).location
+          ? (service.provider as { location?: string }).location!.toLowerCase().includes(loc)
+          : false;
+        return titleMatch || descMatch || busMatch || providerLocMatch;
+      });
     }
 
     // Filter by Search Query
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase().trim();
       result = result.filter(
         (service) =>
           service.title.toLowerCase().includes(query) ||
           service.description.toLowerCase().includes(query) ||
-          service.category.name.toLowerCase().includes(query)
+          service.category.name.toLowerCase().includes(query) ||
+          service.category.slug.toLowerCase().includes(query)
       );
     }
 
@@ -279,18 +412,38 @@ export default function ServicesPage() {
     }
 
     return result;
-  }, [services, selectedCategory, searchQuery, sortBy]);
+  }, [services, selectedCategory, selectedLocation, searchQuery, sortBy]);
+
+  // Dynamically compute available locations list from fetched services data
+  const availableLocations = React.useMemo(() => {
+    const locSet = new Set<string>();
+    services.forEach((s) => {
+      const loc = (s.provider as { location?: string }).location;
+      if (loc) {
+        const parts = loc.split(",").map((p) => p.trim());
+        parts.forEach((p) => {
+          if (p && p.toUpperCase() !== "UAE") locSet.add(p);
+        });
+      }
+    });
+
+    const defaults = ["Dubai", "Abu Dhabi", "Sharjah", "Dubai Marina", "Business Bay", "Jumeirah", "Al Barsha"];
+    defaults.forEach((d) => locSet.add(d));
+
+    const list = Array.from(locSet).map((loc) => ({
+      value: loc,
+      label: loc,
+    }));
+    return [{ value: "all", label: "All Cities / Areas" }, ...list];
+  }, [services]);
 
   return (
     <>
       <Navbar />
 
       <main id="main-content" className="flex-1 pt-16 lg:pt-18 bg-[var(--bg-primary)]">
-        {/* ==========================================
-            1. HERO SECTION
-            ========================================== */}
         {/* Clean Compact Top Search Bar */}
-        <div className="!pt-24 pb-6 bg-white border-[var(--border-subtle)]">
+        <div className="!pt-24 pb-6 bg-white border-b border-[var(--border-subtle)]">
           <div className="container-section max-w-4xl space-y-4">
             <div className="w-full relative">
               <label htmlFor="search-services-input" className="sr-only">
@@ -303,7 +456,7 @@ export default function ServicesPage() {
                 id="search-services-input"
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleQueryChange(e.target.value)}
                 placeholder="Search home cleaning, AC repair, plumbing..."
                 className={cn(
                   "w-full h-12 pl-12 pr-16 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]",
@@ -314,7 +467,7 @@ export default function ServicesPage() {
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => handleQueryChange("")}
                   className="absolute right-4 inset-y-0 text-xs font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   Clear
@@ -323,27 +476,41 @@ export default function ServicesPage() {
             </div>
 
             {/* Quick Popular Pills */}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-[var(--text-tertiary)] font-semibold">Popular:</span>
+              {categories.slice(0, 5).map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(cat.slug)}
+                  className={cn(
+                    "px-3 py-1 rounded-full border text-xs font-medium transition-all cursor-pointer",
+                    selectedCategory === cat.slug
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold"
+                      : "bg-white border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-navy-200"
+                  )}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* ==========================================
-            2. SERVICES FILTER & LISTING SECTION
+            SERVICES FILTER & LISTING SECTION
             ========================================== */}
-        <section className=" bg-white" aria-label="Services listing">
+        <section className="section-padding bg-white" aria-label="Services listing">
           <div className="container-section">
             <div className="flex flex-col lg:flex-row gap-8">
               {/* Sidebar Filters */}
               <aside className="w-full lg:w-64 lg:min-w-[256px] lg:max-w-[256px] shrink-0 flex flex-col gap-6" aria-label="Filters">
-                {/* Search query tag indicator if active */}
-                {(selectedCategory !== "all" || searchQuery) && (
+                {/* Active filters tag indicator if active */}
+                {(selectedCategory !== "all" || selectedLocation !== "all" || searchQuery) && (
                   <div className="p-4 rounded-xl bg-navy-50/50 border border-navy-100 flex items-center justify-between">
                     <span className="text-xs text-navy-800 font-medium">Active filters</span>
                     <button
-                      onClick={() => {
-                        setSelectedCategory("all");
-                        setSearchQuery("");
-                      }}
-                      className="text-xs font-bold text-emerald-600 hover:text-emerald-700"
+                      onClick={handleClearAllFilters}
+                      className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
                     >
                       Clear All
                     </button>
@@ -358,9 +525,9 @@ export default function ServicesPage() {
                   </h3>
                   <div className="flex flex-col gap-1.5" role="tablist">
                     <button
-                      onClick={() => setSelectedCategory("all")}
+                      onClick={() => handleCategoryChange("all")}
                       className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left",
+                        "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
                         selectedCategory === "all"
                           ? "bg-navy-900 text-white font-semibold"
                           : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
@@ -377,9 +544,9 @@ export default function ServicesPage() {
                     {categories.map((cat) => (
                       <button
                         key={cat.id}
-                        onClick={() => setSelectedCategory(cat.slug)}
+                        onClick={() => handleCategoryChange(cat.slug)}
                         className={cn(
-                          "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left",
+                          "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
                           selectedCategory === cat.slug
                             ? "bg-navy-900 text-white font-semibold"
                             : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
@@ -396,6 +563,31 @@ export default function ServicesPage() {
                         </span>
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Location Filter Card */}
+                <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
+                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+                    <MapPin size={16} className="text-emerald-600" />
+                    Location
+                  </h3>
+                  <div className="relative">
+                    <label htmlFor="services-location-select" className="sr-only">
+                      Filter services by location
+                    </label>
+                    <select
+                      id="services-location-select"
+                      value={selectedLocation}
+                      onChange={(e) => handleLocationChange(e.target.value)}
+                      className="w-full bg-white border border-[var(--border-subtle)] rounded-xl px-3 h-10 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    >
+                      {availableLocations.map((loc) => (
+                        <option key={loc.value} value={loc.value}>
+                          {loc.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -427,18 +619,17 @@ export default function ServicesPage() {
 
               {/* Main Services Listings Panel */}
               <div className="flex-1 min-w-0 flex flex-col gap-6">
-                {/* Result header count & mobile filters toggle */}
+                {/* Result header count */}
                 <div className="flex items-center justify-between pb-4 border-b border-[var(--border-subtle)]">
                   <div className="space-y-1">
                     <h2 className="text-lg font-bold text-[var(--text-primary)]">
-                      {selectedCategory === "all" ? "All Offerings" : categories.find(c => c.slug === selectedCategory)?.name}
+                      {selectedCategory === "all" ? "All Offerings" : categories.find((c) => c.slug === selectedCategory)?.name}
                     </h2>
                     <p className="text-xs text-[var(--text-tertiary)]">
                       Showing {filteredServices.length} {filteredServices.length === 1 ? "service" : "services"} in the UAE
                     </p>
                   </div>
 
-                  {/* Dropdown sort for quick/mobile layout */}
                   <div className="flex items-center gap-2">
                     <label htmlFor="mobile-sort-select" className="sr-only">
                       Sort services
@@ -473,14 +664,10 @@ export default function ServicesPage() {
                 ) : filteredServices.length === 0 ? (
                   <EmptyState
                     title="No matching services found"
-                    description="We couldn't find any services matching your search or filters. Try adjusting your query."
+                    description="We couldn't find any services matching your search or active filters. Try adjusting your query."
                     action={{
                       label: "Reset All Filters",
-                      onClick: () => {
-                        setSelectedCategory("all");
-                        setSearchQuery("");
-                        setSortBy("popular");
-                      },
+                      onClick: handleClearAllFilters,
                     }}
                   />
                 ) : (
@@ -513,21 +700,18 @@ export default function ServicesPage() {
                             )}
                             aria-hidden="true"
                           >
-                            {/* Category Label badge */}
                             <div className="absolute top-3 left-3">
                               <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-navy-900 border-none font-semibold">
                                 {service.category.name}
                               </Badge>
                             </div>
 
-                            {/* Featured Label badge */}
                             {service.isFeatured && (
                               <div className="absolute top-3 right-3">
                                 <Badge variant="accent" className="font-semibold">Featured</Badge>
                               </div>
                             )}
 
-                            {/* Center Logo/Icon */}
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-110">
                                 <span className="text-xl font-bold text-navy-800">
@@ -558,7 +742,6 @@ export default function ServicesPage() {
                               </p>
                             </div>
 
-                            {/* Rating and Duration */}
                             <div className="flex items-center justify-between text-xs text-[var(--text-tertiary)] pt-1">
                               <Rating
                                 value={service.rating}
@@ -575,10 +758,8 @@ export default function ServicesPage() {
                               )}
                             </div>
 
-                            {/* Divider line */}
                             <div className="border-t border-[var(--border-subtle)]" />
 
-                            {/* Provider credentials */}
                             <div className="flex items-center justify-between gap-2 mt-auto">
                               <div className="flex items-center gap-2 min-w-0">
                                 <div className="h-7 w-7 rounded-full bg-navy-900 flex items-center justify-center text-white shrink-0">
@@ -607,7 +788,6 @@ export default function ServicesPage() {
                               </div>
                             </div>
 
-                            {/* CTA Action button */}
                             <Link
                               href={`/booking?serviceId=${service.id}&providerId=${service.providerId}`}
                               className={cn(
@@ -630,9 +810,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* ==========================================
-            3. WHY CHOOSE US
-            ========================================== */}
+        {/* WHY CHOOSE US */}
         <section className="section-padding bg-[var(--bg-secondary)] border-y border-[var(--border-subtle)]" aria-labelledby="why-choose-us-title">
           <div className="container-section text-center max-w-5xl space-y-12">
             <div className="space-y-3 max-w-xl mx-auto">
@@ -647,20 +825,20 @@ export default function ServicesPage() {
                   icon: UserCheck,
                   title: "100% Vetted Pros",
                   desc: "Every provider undergoes rigorous background screening, certification reviews, and identity verification before their listing is approved.",
-                  color: "bg-emerald-50 text-emerald-600"
+                  color: "bg-emerald-50 text-emerald-600",
                 },
                 {
                   icon: ThumbsUp,
                   title: "Satisfaction Guarantee",
                   desc: "Your happiness is our priority. If you're not satisfied with the quality of execution, we'll send another professional to make it right.",
-                  color: "bg-gold-50 text-gold-600"
+                  color: "bg-gold-50 text-gold-600",
                 },
                 {
                   icon: Lock,
                   title: "Secure Cashless Payments",
                   desc: "Your card is charged only after the service is fully completed and signed off. Enjoy zero hidden fees and clear upfront pricing.",
-                  color: "bg-navy-50 text-navy-800"
-                }
+                  color: "bg-navy-50 text-navy-800",
+                },
               ].map((item, i) => {
                 const Icon = item.icon;
                 return (
@@ -679,94 +857,25 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* ==========================================
-            4. HOW IT WORKS
-            ========================================== */}
-        <section className="section-padding bg-white" aria-labelledby="how-it-works-title">
-          <div className="container-section text-center max-w-5xl space-y-12">
-            <div className="space-y-3 max-w-xl mx-auto">
-              <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Workflow</p>
-              <h2 id="how-it-works-title" className="text-[var(--text-primary)]">How Easy is Booking?</h2>
-              <p className="text-[var(--text-secondary)] text-sm">Secure a service provider at your doorstep in under three minutes.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
-              {[
-                { step: "01", title: "Select Service", desc: "Choose from cleaning, plumbing, AC repair, and more." },
-                { step: "02", title: "Schedule Date", desc: "Pick a date and convenient time window that suits you." },
-                { step: "03", title: "Match Provider", desc: "We link you with a highly-rated professional nearby." },
-                { step: "04", title: "Job Completed", desc: "The job is completed, you approve, and payment is processed." }
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center p-6 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-subtle)] relative gap-4">
-                  <div className="absolute top-4 right-4 text-xs font-extrabold text-navy-200">{item.step}</div>
-                  <div className="h-10 w-10 rounded-xl bg-navy-900 text-white flex items-center justify-center font-bold text-xs">
-                    {i + 1}
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-xs font-bold text-[var(--text-primary)]">{item.title}</h3>
-                    <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ==========================================
-            5. INTERACTIVE FAQ SECTION
-            ========================================== */}
+        {/* FAQ SECTION */}
         <FAQSection
           title="Frequently Asked Questions"
-          subtitle="Everything you need to know about ProServe services."
+          subtitle="Everything you need to know about booking home services with ProServe."
           categoryLabel="Help Desk"
           items={FAQS}
-          bgClassName="bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)]"
+          bgClassName="bg-white"
         />
-
-        {/* ==========================================
-            6. CALL TO ACTION (CTA)
-            ========================================== */}
-        <section className="section-padding bg-white" aria-label="Get started">
-          <div className="container-section">
-            <div className="rounded-3xl gradient-navy text-white p-8 md:p-12 lg:p-16 text-center max-w-4xl mx-auto relative overflow-hidden shadow-2xl flex flex-col items-center gap-6">
-              {/* Background accents */}
-              <div className="absolute top-0 right-0 h-40 w-40 bg-emerald-500/10 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 h-40 w-40 bg-gold-500/10 rounded-full blur-3xl" />
-
-              <h2 className="text-display font-extrabold text-white text-balance leading-tight">
-                Ready to book your next home service?
-              </h2>
-
-              <p className="text-navy-100 text-sm lg:text-base max-w-xl mx-auto text-balance">
-                Join thousands of satisfied UAE households. Sign up today and get 15% off your first booking.
-              </p>
-
-              <div className="flex flex-wrap justify-center gap-4 mt-2">
-                <Link
-                  href="/register"
-                  className={cn(
-                    "px-6 py-3 rounded-xl font-bold text-xs bg-emerald-500 text-white hover:bg-emerald-600 transition-colors shadow-lg",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-                  )}
-                >
-                  Create Free Account
-                </Link>
-                <Link
-                  href="/login"
-                  className={cn(
-                    "px-6 py-3 rounded-xl font-bold text-xs bg-white/10 text-white hover:bg-white/20 transition-colors border border-white/25",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                  )}
-                >
-                  Sign In
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       <Footer />
     </>
+  );
+}
+
+export default function ServicesPage() {
+  return (
+    <React.Suspense fallback={<div className="p-12 text-center text-xs">Loading services directory...</div>}>
+      <ServicesContent />
+    </React.Suspense>
   );
 }

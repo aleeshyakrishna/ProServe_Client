@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Search,
   SlidersHorizontal,
@@ -77,11 +78,13 @@ const SEEDED_PROVIDERS: Record<string, Provider> = {
 
 const LOCATIONS = [
   { value: "all", label: "All Cities / Areas" },
-  { value: "dubai marina", label: "Dubai Marina" },
-  { value: "business bay", label: "Business Bay" },
-  { value: "jumeirah", label: "Jumeirah" },
-  { value: "downtown dubai", label: "Downtown Dubai" },
-  { value: "al barsha", label: "Al Barsha" }
+  { value: "Dubai", label: "Dubai" },
+  { value: "Abu Dhabi", label: "Abu Dhabi" },
+  { value: "Sharjah", label: "Sharjah" },
+  { value: "Dubai Marina", label: "Dubai Marina" },
+  { value: "Business Bay", label: "Business Bay" },
+  { value: "Jumeirah", label: "Jumeirah" },
+  { value: "Al Barsha", label: "Al Barsha" },
 ];
 
 // ------ Icon Map -------------------------------------------
@@ -126,21 +129,115 @@ function ProviderCardSkeleton() {
   );
 }
 
-// ------ Main Component -------------------------------------
+// ------ Inner Content Component (Consumes useSearchParams) --
 
-export default function ProvidersListPage() {
+function ProvidersContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   // Data State
   const [providers, setProviders] = React.useState<Provider[]>([]);
   const [categories, setCategories] = React.useState<Category[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isError, setIsError] = React.useState(false);
 
-  // Filter & Search Interaction State
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState("all");
-  const [selectedLocation, setSelectedLocation] = React.useState("all");
-  const [minRating, setMinRating] = React.useState<number>(0);
-  const [sortBy, setSortBy] = React.useState("rating");
+  // Read initial interaction states from URL parameters
+  const initialQuery = searchParams.get("search") || searchParams.get("query") || "";
+  const initialCat = searchParams.get("category") || "all";
+  const initialLoc = searchParams.get("location") || "all";
+  const initialRating = Number(searchParams.get("rating")) || 0;
+
+  const [searchQuery, setSearchQuery] = React.useState(initialQuery);
+  const [selectedCategory, setSelectedCategory] = React.useState<string>(initialCat);
+  const [selectedLocation, setSelectedLocation] = React.useState<string>(initialLoc);
+  const [minRating, setMinRating] = React.useState<number>(initialRating);
+  const [sortBy, setSortBy] = React.useState<string>("rating");
+
+  // Keep state synced when searchParams change from external router pushes
+  React.useEffect(() => {
+    const urlQuery = searchParams.get("search") || searchParams.get("query") || "";
+    const urlCat = searchParams.get("category") || "all";
+    const urlLoc = searchParams.get("location") || "all";
+    const urlRating = Number(searchParams.get("rating")) || 0;
+    setSearchQuery(urlQuery);
+    setSelectedCategory(urlCat);
+    setSelectedLocation(urlLoc);
+    setMinRating(urlRating);
+  }, [searchParams]);
+
+  // Update URL search parameters
+  const updateUrlParams = (newQuery: string, newCat: string, newLoc: string, newRating: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newQuery.trim()) {
+      params.set("search", newQuery.trim());
+    } else {
+      params.delete("search");
+      params.delete("query");
+    }
+    if (newCat && newCat !== "all") {
+      params.set("category", newCat);
+    } else {
+      params.delete("category");
+    }
+    if (newLoc && newLoc !== "all") {
+      params.set("location", newLoc);
+    } else {
+      params.delete("location");
+    }
+    if (newRating > 0) {
+      params.set("rating", String(newRating));
+    } else {
+      params.delete("rating");
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  // Debounced URL synchronization for search input typing to avoid _rsc request spam
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      const currentUrlQuery = params.get("search") || params.get("query") || "";
+      if (searchQuery.trim() !== currentUrlQuery.trim()) {
+        if (searchQuery.trim()) {
+          params.set("search", searchQuery.trim());
+        } else {
+          params.delete("search");
+          params.delete("query");
+        }
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchParams, pathname, router]);
+
+  const handleQueryChange = (val: string) => {
+    setSearchQuery(val);
+  };
+
+  const handleCategoryChange = (catSlug: string) => {
+    setSelectedCategory(catSlug);
+    updateUrlParams(searchQuery, catSlug, selectedLocation, minRating);
+  };
+
+  const handleLocationChange = (loc: string) => {
+    setSelectedLocation(loc);
+    updateUrlParams(searchQuery, selectedCategory, loc, minRating);
+  };
+
+  const handleRatingChange = (rating: number) => {
+    setMinRating(rating);
+    updateUrlParams(searchQuery, selectedCategory, selectedLocation, rating);
+  };
+
+  const handleClearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedLocation("all");
+    setMinRating(0);
+    updateUrlParams("", "all", "all", 0);
+  };
 
   // Fetch Categories & Providers
   const loadData = React.useCallback(async (active: boolean) => {
@@ -304,6 +401,28 @@ export default function ProvidersListPage() {
     return result;
   }, [providers, searchQuery, selectedCategory, selectedLocation, minRating, sortBy]);
 
+  // Dynamically compute available locations list from fetched providers data
+  const availableLocations = React.useMemo(() => {
+    const locSet = new Set<string>();
+    providers.forEach((p) => {
+      if (p.location) {
+        const parts = p.location.split(",").map((pt) => pt.trim());
+        parts.forEach((pt) => {
+          if (pt && pt.toUpperCase() !== "UAE") locSet.add(pt);
+        });
+      }
+    });
+
+    const defaults = ["Dubai", "Abu Dhabi", "Sharjah", "Dubai Marina", "Business Bay", "Jumeirah", "Al Barsha"];
+    defaults.forEach((d) => locSet.add(d));
+
+    const list = Array.from(locSet).map((loc) => ({
+      value: loc,
+      label: loc,
+    }));
+    return [{ value: "all", label: "All Cities / Areas" }, ...list];
+  }, [providers]);
+
   return (
     <>
       <Navbar />
@@ -323,7 +442,7 @@ export default function ProvidersListPage() {
                 id="search-providers-input"
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleQueryChange(e.target.value)}
                 placeholder="Search by provider name, specialty, or keyword..."
                 className={cn(
                   "w-full h-12 pl-12 pr-16 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]",
@@ -334,7 +453,7 @@ export default function ProvidersListPage() {
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => handleQueryChange("")}
                   className="absolute right-4 inset-y-0 text-xs font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   Clear
@@ -359,12 +478,7 @@ export default function ProvidersListPage() {
                   <div className="p-4 rounded-xl bg-navy-50/50 border border-navy-100 flex items-center justify-between">
                     <span className="text-xs text-navy-800 font-medium">Active filters</span>
                     <button
-                      onClick={() => {
-                        setSelectedCategory("all");
-                        setSelectedLocation("all");
-                        setMinRating(0);
-                        setSearchQuery("");
-                      }}
+                      onClick={handleClearAllFilters}
                       className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
                     >
                       Clear All
@@ -380,7 +494,7 @@ export default function ProvidersListPage() {
                   </h3>
                   <div className="flex flex-col gap-1.5" role="tablist">
                     <button
-                      onClick={() => setSelectedCategory("all")}
+                      onClick={() => handleCategoryChange("all")}
                       className={cn(
                         "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
                         selectedCategory === "all"
@@ -401,7 +515,7 @@ export default function ProvidersListPage() {
                       return (
                         <button
                           key={cat.id}
-                          onClick={() => setSelectedCategory(cat.slug)}
+                          onClick={() => handleCategoryChange(cat.slug)}
                           className={cn(
                             "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
                             selectedCategory === cat.slug
@@ -434,10 +548,10 @@ export default function ProvidersListPage() {
                     <select
                       id="location-select"
                       value={selectedLocation}
-                      onChange={(e) => setSelectedLocation(e.target.value)}
+                      onChange={(e) => handleLocationChange(e.target.value)}
                       className="w-full bg-white border border-[var(--border-subtle)] rounded-xl px-3 h-10 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                     >
-                      {LOCATIONS.map((loc) => (
+                      {availableLocations.map((loc) => (
                         <option key={loc.value} value={loc.value}>
                           {loc.label}
                         </option>
@@ -461,7 +575,7 @@ export default function ProvidersListPage() {
                           name="minRating"
                           value={opt.value}
                           checked={minRating === opt.value}
-                          onChange={() => setMinRating(opt.value)}
+                          onChange={() => handleRatingChange(opt.value)}
                           className="h-4 w-4 border-[var(--border-default)] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
                         />
                         <span>{opt.label}</span>
@@ -525,12 +639,7 @@ export default function ProvidersListPage() {
                     description="We couldn't find any professionals matching your search queries or active filters."
                     action={{
                       label: "Reset All Filters",
-                      onClick: () => {
-                        setSelectedCategory("all");
-                        setSelectedLocation("all");
-                        setMinRating(0);
-                        setSearchQuery("");
-                      },
+                      onClick: handleClearAllFilters,
                     }}
                   />
                 ) : (
@@ -663,5 +772,13 @@ export default function ProvidersListPage() {
 
       <Footer />
     </>
+  );
+}
+
+export default function ProvidersListPage() {
+  return (
+    <React.Suspense fallback={<div className="p-12 text-center text-xs">Loading providers directory...</div>}>
+      <ProvidersContent />
+    </React.Suspense>
   );
 }

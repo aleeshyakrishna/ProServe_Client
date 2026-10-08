@@ -42,36 +42,9 @@ const DEFAULT_BOOKING_STATE: BookingState = {
 
 const BookingContext = React.createContext<BookingContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = "proserve_booking_draft";
-
 export function BookingProvider({ children }: { children: React.ReactNode }) {
+  // Purely in-memory booking state — zero localStorage storage
   const [booking, setBooking] = React.useState<BookingState>(DEFAULT_BOOKING_STATE);
-  const [isInitialized, setIsInitialized] = React.useState(false);
-
-  // Load draft from localStorage on mount
-  React.useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setBooking((prev) => ({ ...prev, ...parsed }));
-      }
-    } catch (e) {
-      console.warn("Failed to load booking draft from localStorage", e);
-    } finally {
-      setIsInitialized(true);
-    }
-  }, []);
-
-  // Save to localStorage when booking state changes
-  React.useEffect(() => {
-    if (!isInitialized) return;
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(booking));
-    } catch (e) {
-      console.warn("Failed to save booking draft to localStorage", e);
-    }
-  }, [booking, isInitialized]);
 
   const updateBooking = React.useCallback((updates: Partial<BookingState>) => {
     setBooking((prev) => ({ ...prev, ...updates }));
@@ -83,11 +56,6 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
 
   const resetBooking = React.useCallback(() => {
     setBooking(DEFAULT_BOOKING_STATE);
-    try {
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-    } catch (e) {
-      console.warn("Failed to clear booking draft", e);
-    }
   }, []);
 
   return (

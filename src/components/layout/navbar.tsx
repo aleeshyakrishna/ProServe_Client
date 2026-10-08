@@ -343,6 +343,8 @@ function MobileMenu({ isOpen, onClose, pathname, isLoggedIn, user, onLogout }: M
   );
 }
 
+import { useAuth } from "@/context/AuthContext";
+
 // ------ Navbar Root -----------------------------------------
 
 export function Navbar() {
@@ -350,51 +352,11 @@ export function Navbar() {
   const router = useRouter();
   const scrolled = useScrolled();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
-  const [user, setUser] = React.useState<UserState | null>(null);
-
-  React.useEffect(() => {
-    const token = tokenStorage.getAccessToken();
-    if (token) {
-      AuthService.getMe()
-        .then((res) => {
-          if (res && (res.id || res.email || res.name || res.profile)) {
-            setIsLoggedIn(true);
-            setUser({
-              name: res.profile?.fullName || res.name || res.user?.name || res.email?.split("@")[0] || "Customer",
-              email: res.email || res.user?.email || "",
-              role: res.roles?.[0] || res.role || res.user?.role || "CUSTOMER",
-              avatar: res.profile?.avatar,
-            });
-          } else {
-            // Token is invalid / user not found -> Logout
-            tokenStorage.clear();
-            setIsLoggedIn(false);
-            setUser(null);
-          }
-        })
-        .catch(() => {
-          // Token expired or invalid session -> Logout
-          tokenStorage.clear();
-          setIsLoggedIn(false);
-          setUser(null);
-        });
-    } else {
-      setIsLoggedIn(false);
-      setUser(null);
-    }
-  }, [pathname]);
+  const { user, isLoggedIn, logout } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      await AuthService.logout();
-    } catch {
-      tokenStorage.clear();
-    } finally {
-      setIsLoggedIn(false);
-      setUser(null);
-      router.push("/login");
-    }
+    await logout();
+    router.push("/login");
   };
 
   return (

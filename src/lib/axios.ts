@@ -1,35 +1,25 @@
 import axios from "axios";
 
-// ------ Constants -----------------------------------------------------------
+// ------ Token Helpers (In-Memory Only for Security) -------------------------
+// No tokens or sensitive credentials are ever written to localStorage.
+// The backend sets HTTP-Only cookies which JavaScript cannot read, eliminating XSS token theft risks.
 
-const TOKEN_KEY = "ps_access_token";
-const REFRESH_TOKEN_KEY = "ps_refresh_token";
-
-// ------ Token Helpers -------------------------------------------------------
+let inMemoryToken: string | null = null;
 
 export const tokenStorage = {
-  getAccessToken: (): string | null => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(TOKEN_KEY);
-  },
-  getRefreshToken: (): string | null => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
-  },
-  save: (accessToken: string, refreshToken: string): void => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(TOKEN_KEY, accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    // Also set a non-httpOnly cookie so Next.js middleware can read it
-    // for route protection (middleware runs server-side).
-    document.cookie = `ps_has_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+  getAccessToken: (): string | null => inMemoryToken,
+  getRefreshToken: (): string | null => null,
+  save: (accessToken: string, _refreshToken?: string): void => {
+    inMemoryToken = accessToken;
+    if (typeof window !== "undefined") {
+      document.cookie = `ps_has_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+    }
   },
   clear: (): void => {
-    if (typeof window === "undefined") return;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    // Expire the session cookie
-    document.cookie = "ps_has_session=; path=/; max-age=0; SameSite=Lax";
+    inMemoryToken = null;
+    if (typeof window !== "undefined") {
+      document.cookie = "ps_has_session=; path=/; max-age=0; SameSite=Lax";
+    }
   },
 };
 
@@ -40,10 +30,10 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
+  withCredentials: true, // Automatically attaches HTTP-Only authentication cookies
 });
 
-// Attach Bearer token to every request if available
+// Attach Bearer token to every request if available in memory
 api.interceptors.request.use((config) => {
   const token = tokenStorage.getAccessToken();
   if (token) {

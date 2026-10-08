@@ -476,7 +476,7 @@ function ServicesContent() {
             </div>
 
             {/* Quick Popular Pills */}
-            <div className="flex flex-wrap items-center gap-2 text-xs">
+            {/* <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-[var(--text-tertiary)] font-semibold">Popular:</span>
               {categories.slice(0, 5).map((cat) => (
                 <button
@@ -492,7 +492,7 @@ function ServicesContent() {
                   {cat.name}
                 </button>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
 

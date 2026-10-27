@@ -141,6 +141,8 @@ npm run lint
 | `npm run build` | Build the application |
 | `npm start` | Run production build |
 | `npm run lint` | Run ESLint |
+| `npm test` | Run unit tests (Vitest) |
+| `npm run test:watch` | Run tests in watch mode |
 
 ---
 
@@ -213,6 +215,20 @@ Use:
 - Zod
 
 Validation schemas should be stored close to the feature or in a dedicated validation folder.
+
+---
+
+## 🪝 Custom Hooks
+
+The services page (`src/app/services/page.tsx`) keeps only UI. Its logic lives in reusable hooks:
+
+| Hook | What it does |
+|------|--------------|
+| `useServicesData` | Loads categories and services, maps API data, falls back to demo data, and cancels in-flight requests (AbortController) on unmount or retry. |
+| `useServiceFilters` | Search, category, location and sort state. The URL is the source of truth, so filtered results are shareable and survive refresh. Category/location update the URL immediately; search updates it only after typing stops. |
+| `useDebouncedValue` | Returns a value only after it has stopped changing for a delay (300 ms for search). |
+
+Filtering and sorting are pure functions in `src/lib/service-filters.ts`, so they are tested without rendering. Tests live next to the code in `__tests__` folders.
 
 ---
 

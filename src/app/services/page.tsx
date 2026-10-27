@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Search,
   Wrench,
@@ -26,26 +25,12 @@ import {
 import { cn, formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Rating } from "@/components/common/rating";
-import { POPULAR_SERVICES, CATEGORIES, FEATURED_PROVIDERS } from "@/constants";
-import type { Service, Category } from "@/types";
-import api from "@/lib/axios";
+import { useServicesData } from "@/hooks/useServicesData";
+import { useServiceFilters } from "@/hooks/useServiceFilters";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { EmptyState, ErrorState } from "@/components/common/empty-state";
 import { FAQSection } from "@/components/common/FAQSection";
-
-// ------ Location List ----------------------------------------
-
-const LOCATIONS = [
-  { value: "all", label: "All Cities / Areas" },
-  { value: "Dubai", label: "Dubai" },
-  { value: "Abu Dhabi", label: "Abu Dhabi" },
-  { value: "Sharjah", label: "Sharjah" },
-  { value: "Dubai Marina", label: "Dubai Marina" },
-  { value: "Business Bay", label: "Business Bay" },
-  { value: "Jumeirah", label: "Jumeirah" },
-  { value: "Al Barsha", label: "Al Barsha" },
-];
 
 // ------ Icon Map -------------------------------------------
 
@@ -121,321 +106,23 @@ function ServiceCardSkeleton() {
   );
 }
 
-interface RawCategory {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  iconName?: string | null;
-  imageUrl?: string | null;
-}
-
-interface RawService {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  price: number;
-  providerId: string;
-  isAvailable: boolean;
-}
-
 // ------ Inner Content Component (Consumes useSearchParams) --
 
 function ServicesContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // Data State
-  const [services, setServices] = React.useState<Service[]>([]);
-  const [categories, setCategories] = React.useState<Category[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [isError, setIsError] = React.useState(false);
-
-  // Read initial interaction states from URL parameters
-  const initialQuery = searchParams.get("search") || searchParams.get("query") || "";
-  const initialCat = searchParams.get("category") || "all";
-  const initialLoc = searchParams.get("location") || "all";
-
-  const [searchQuery, setSearchQuery] = React.useState(initialQuery);
-  const [selectedCategory, setSelectedCategory] = React.useState<string>(initialCat);
-  const [selectedLocation, setSelectedLocation] = React.useState<string>(initialLoc);
-  const [sortBy, setSortBy] = React.useState<string>("popular");
-
-  // Keep state synced when searchParams change from external router pushes
-  React.useEffect(() => {
-    const urlQuery = searchParams.get("search") || searchParams.get("query") || "";
-    const urlCat = searchParams.get("category") || "all";
-    const urlLoc = searchParams.get("location") || "all";
-    setSearchQuery(urlQuery);
-    setSelectedCategory(urlCat);
-    setSelectedLocation(urlLoc);
-  }, [searchParams]);
-
-  // Update URL search parameters
-  const updateUrlParams = (newQuery: string, newCat: string, newLoc: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (newQuery.trim()) {
-      params.set("search", newQuery.trim());
-    } else {
-      params.delete("search");
-      params.delete("query");
-    }
-    if (newCat && newCat !== "all") {
-      params.set("category", newCat);
-    } else {
-      params.delete("category");
-    }
-    if (newLoc && newLoc !== "all") {
-      params.set("location", newLoc);
-    } else {
-      params.delete("location");
-    }
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
-  // Debounced URL synchronization for search input typing to avoid _rsc request spam
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      const currentUrlQuery = params.get("search") || params.get("query") || "";
-      if (searchQuery.trim() !== currentUrlQuery.trim()) {
-        if (searchQuery.trim()) {
-          params.set("search", searchQuery.trim());
-        } else {
-          params.delete("search");
-          params.delete("query");
-        }
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, searchParams, pathname, router]);
-
-  const handleQueryChange = (val: string) => {
-    setSearchQuery(val);
-  };
-
-  const handleCategoryChange = (catSlug: string) => {
-    setSelectedCategory(catSlug);
-    updateUrlParams(searchQuery, catSlug, selectedLocation);
-  };
-
-  const handleLocationChange = (loc: string) => {
-    setSelectedLocation(loc);
-    updateUrlParams(searchQuery, selectedCategory, loc);
-  };
-
-  const handleClearAllFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setSelectedLocation("all");
-    updateUrlParams("", "all", "all");
-  };
-
-  // Fetch Services & Categories
-  const loadData = React.useCallback(async (active = true) => {
-    setIsLoading(true);
-    setIsError(false);
-    try {
-      // 1. Fetch categories
-      const catRes = await api.get("/api/categories");
-      const rawCats = catRes.data.data;
-      let finalCats: Category[] = [];
-
-      if (Array.isArray(rawCats) && rawCats.length > 0) {
-        finalCats = rawCats.map((item: RawCategory) => ({
-          id: item.id,
-          name: item.name.charAt(0) + item.name.slice(1).toLowerCase(),
-          slug: item.slug,
-          description: item.description || "",
-          iconName: item.iconName ? item.iconName.toLowerCase() : "wrench",
-          serviceCount: 0,
-          imageUrl: item.imageUrl || null,
-        }));
-      } else {
-        finalCats = CATEGORIES;
-      }
-
-      // 2. Fetch services
-      const svcRes = await api.get("/api/services");
-      const rawServices = svcRes.data.data;
-      let finalServices: Service[] = [];
-
-      if (Array.isArray(rawServices) && rawServices.length > 0) {
-        finalServices = rawServices.map((item: RawService) => {
-          const matchedProv = FEATURED_PROVIDERS.find((p) => p.id === item.providerId);
-          return {
-            id: item.id,
-            providerId: item.providerId,
-            provider: {
-              id: item.providerId,
-              businessName: matchedProv?.businessName || "ProTech UAE Provider",
-              avatarUrl: matchedProv?.avatarUrl || null,
-              rating: matchedProv?.rating || 4.9,
-              reviewCount: matchedProv?.reviewCount || 18,
-              isVerified: matchedProv?.isVerified ?? true,
-              location: matchedProv?.location || "Dubai Marina, Dubai",
-            },
-            categoryId: item.category.toLowerCase(),
-            category: {
-              id: item.category.toLowerCase(),
-              name: item.category.charAt(0) + item.category.slice(1).toLowerCase(),
-              slug: item.category.toLowerCase(),
-            },
-            title: item.title,
-            description: item.description,
-            imageUrl: null,
-            priceFrom: item.price,
-            priceTo: null,
-            pricingType: "fixed" as const,
-            currency: "AED",
-            duration: "1-2 hours",
-            isActive: item.isAvailable,
-            isFeatured: true,
-            rating: 4.8,
-            reviewCount: 15,
-            createdAt: new Date().toISOString(),
-          };
-        });
-      } else {
-        finalServices = POPULAR_SERVICES.map((svc) => {
-          const matchedProv = FEATURED_PROVIDERS.find((p) => p.id === svc.providerId);
-          return {
-            ...svc,
-            provider: {
-              ...svc.provider,
-              location: matchedProv?.location || "Dubai Marina, Dubai",
-            },
-          };
-        });
-      }
-
-      // 3. Map dynamic service counts to categories
-      finalCats = finalCats.map((cat) => {
-        const count = finalServices.filter((s) => s.category.slug === cat.slug).length;
-        return { ...cat, serviceCount: count || cat.serviceCount };
-      });
-
-      if (active) {
-        setCategories(finalCats);
-        setServices(finalServices);
-        setIsError(false);
-      }
-    } catch (err) {
-      console.error("Failed to load services data:", err);
-      if (active) {
-        setCategories(CATEGORIES);
-        setServices(
-          POPULAR_SERVICES.map((svc) => {
-            const matchedProv = FEATURED_PROVIDERS.find((p) => p.id === svc.providerId);
-            return {
-              ...svc,
-              provider: {
-                ...svc.provider,
-                location: matchedProv?.location || "Dubai Marina, Dubai",
-              },
-            };
-          })
-        );
-        if (POPULAR_SERVICES.length === 0) {
-          setIsError(true);
-        }
-      }
-    } finally {
-      if (active) {
-        setIsLoading(false);
-      }
-    }
-  }, []);
-
-  React.useEffect(() => {
-    let active = true;
-    Promise.resolve().then(() => {
-      if (active) {
-        loadData(active);
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [loadData]);
-
-  // Filter & Sort Logic
-  const filteredServices = React.useMemo(() => {
-    let result = [...services];
-
-    // Filter by Category Tab
-    if (selectedCategory !== "all") {
-      result = result.filter(
-        (service) =>
-          service.category.slug.toLowerCase() === selectedCategory.toLowerCase() ||
-          service.categoryId.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-
-    // Filter by Location
-    if (selectedLocation !== "all") {
-      const loc = selectedLocation.toLowerCase();
-      result = result.filter((service) => {
-        const titleMatch = service.title.toLowerCase().includes(loc);
-        const descMatch = service.description.toLowerCase().includes(loc);
-        const busMatch = service.provider?.businessName?.toLowerCase().includes(loc);
-        const providerLocMatch = (service.provider as { location?: string }).location
-          ? (service.provider as { location?: string }).location!.toLowerCase().includes(loc)
-          : false;
-        return titleMatch || descMatch || busMatch || providerLocMatch;
-      });
-    }
-
-    // Filter by Search Query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      result = result.filter(
-        (service) =>
-          service.title.toLowerCase().includes(query) ||
-          service.description.toLowerCase().includes(query) ||
-          service.category.name.toLowerCase().includes(query) ||
-          service.category.slug.toLowerCase().includes(query)
-      );
-    }
-
-    // Sorting
-    if (sortBy === "price_asc") {
-      result.sort((a, b) => a.priceFrom - b.priceFrom);
-    } else if (sortBy === "price_desc") {
-      result.sort((a, b) => b.priceFrom - a.priceFrom);
-    } else if (sortBy === "rating") {
-      result.sort((a, b) => b.rating - a.rating);
-    }
-
-    return result;
-  }, [services, selectedCategory, selectedLocation, searchQuery, sortBy]);
-
-  // Dynamically compute available locations list from fetched services data
-  const availableLocations = React.useMemo(() => {
-    const locSet = new Set<string>();
-    services.forEach((s) => {
-      const loc = (s.provider as { location?: string }).location;
-      if (loc) {
-        const parts = loc.split(",").map((p) => p.trim());
-        parts.forEach((p) => {
-          if (p && p.toUpperCase() !== "UAE") locSet.add(p);
-        });
-      }
-    });
-
-    const defaults = ["Dubai", "Abu Dhabi", "Sharjah", "Dubai Marina", "Business Bay", "Jumeirah", "Al Barsha"];
-    defaults.forEach((d) => locSet.add(d));
-
-    const list = Array.from(locSet).map((loc) => ({
-      value: loc,
-      label: loc,
-    }));
-    return [{ value: "all", label: "All Cities / Areas" }, ...list];
-  }, [services]);
+  const { services, categories, isLoading, isError, reload } = useServicesData();
+  const {
+    searchQuery,
+    selectedCategory,
+    selectedLocation,
+    sortBy,
+    setSortBy,
+    handleQueryChange,
+    handleCategoryChange,
+    handleLocationChange,
+    handleClearAllFilters,
+    filteredServices,
+    availableLocations,
+  } = useServiceFilters(services);
 
   return (
     <>
@@ -659,7 +346,7 @@ function ServicesContent() {
                   <ErrorState
                     title="Could not load services"
                     description="Our server encountered an issue fetching active services. Please try again."
-                    onRetry={loadData}
+                    onRetry={reload}
                   />
                 ) : filteredServices.length === 0 ? (
                   <EmptyState

@@ -7,6 +7,18 @@ import { Menu, X, Search, User, LogOut, LayoutDashboard, ChevronDown } from "luc
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { NAV_LINKS, APP_NAME } from "@/constants";
+import { useI18n } from "@/i18n/I18nProvider";
+import type { Dictionary } from "@/i18n/dictionaries";
+import { LanguageSwitcher } from "./language-switcher";
+
+const NAV_LABEL_KEYS: Record<string, keyof Dictionary["nav"]> = {
+  "/services": "services",
+  "/providers": "providers",
+  "/#how-it-works": "howItWorks",
+  "/pricing": "pricing",
+};
+const navLabel = (href: string, fallback: string, t: Dictionary) =>
+  NAV_LABEL_KEYS[href] ? t.nav[NAV_LABEL_KEYS[href]] : fallback;
 import { tokenStorage } from "@/lib/axios";
 import { AuthService } from "@/services/auth.service";
 
@@ -53,6 +65,7 @@ interface NavLinksProps {
 }
 
 function DesktopNavLinks({ pathname }: NavLinksProps) {
+  const { t } = useI18n();
   return (
     <nav aria-label="Primary navigation">
       <ul className="flex items-center gap-1" role="list">
@@ -71,7 +84,7 @@ function DesktopNavLinks({ pathname }: NavLinksProps) {
                 )}
                 aria-current={isActive ? "page" : undefined}
               >
-                {link.label}
+                {navLabel(link.href, link.label, t)}
               </Link>
             </li>
           );
@@ -99,6 +112,7 @@ interface NavActionsProps {
 }
 
 function NavActions({ user, isLoggedIn, onLogout }: NavActionsProps) {
+  const { t } = useI18n();
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -145,7 +159,7 @@ function NavActions({ user, isLoggedIn, onLogout }: NavActionsProps) {
 
         {/* Dropdown Menu */}
         {dropdownOpen && (
-          <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-subtle)] shadow-2xl p-2 z-50 animate-fade-in space-y-1">
+          <div className="absolute end-0 top-full mt-2 w-56 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-subtle)] shadow-2xl p-2 z-50 animate-fade-in space-y-1">
             <div className="px-3 py-2 border-b border-[var(--border-subtle)] mb-1">
               <p className="text-xs font-bold text-[var(--text-primary)] truncate">{user?.name}</p>
               <p className="text-[11px] text-[var(--text-tertiary)] truncate">{user?.email}</p>
@@ -157,7 +171,7 @@ function NavActions({ user, isLoggedIn, onLogout }: NavActionsProps) {
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition"
             >
               <LayoutDashboard size={15} className="text-emerald-500" />
-              <span>Dashboard</span>
+              <span>{t.nav.dashboard}</span>
             </Link>
 
             <button
@@ -191,14 +205,14 @@ function NavActions({ user, isLoggedIn, onLogout }: NavActionsProps) {
         href="/login"
         className={cn(buttonVariants({ variant: "ghost", size: "md" }))}
       >
-        Sign in
+        {t.nav.login}
       </Link>
 
       <Link
         href="/register"
         className={cn(buttonVariants({ variant: "primary", size: "md" }))}
       >
-        Get started
+        {t.nav.getStarted}
       </Link>
     </div>
   );
@@ -216,6 +230,7 @@ interface MobileMenuProps {
 }
 
 function MobileMenu({ isOpen, onClose, pathname, isLoggedIn, user, onLogout }: MobileMenuProps) {
+  const { t } = useI18n();
   React.useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -247,7 +262,7 @@ function MobileMenu({ isOpen, onClose, pathname, isLoggedIn, user, onLogout }: M
         aria-hidden="true"
       />
 
-      <div className="relative ml-auto h-full w-80 max-w-full bg-[var(--surface-card)] shadow-2xl flex flex-col">
+      <div className="relative ms-auto h-full w-80 max-w-full bg-[var(--surface-card)] shadow-2xl flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[var(--border-subtle)]">
           <NavLogo />
@@ -275,6 +290,7 @@ function MobileMenu({ isOpen, onClose, pathname, isLoggedIn, user, onLogout }: M
 
         {/* Links */}
         <nav className="flex-1 p-5 space-y-1" aria-label="Mobile navigation links">
+          <LanguageSwitcher className="w-full justify-start mb-2" />
           {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -289,7 +305,7 @@ function MobileMenu({ isOpen, onClose, pathname, isLoggedIn, user, onLogout }: M
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                 )}
               >
-                {link.label}
+                {navLabel(link.href, link.label, t)}
               </Link>
             );
           })}
@@ -301,7 +317,7 @@ function MobileMenu({ isOpen, onClose, pathname, isLoggedIn, user, onLogout }: M
               className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold text-emerald-600 bg-emerald-500/10 transition mt-2"
             >
               <LayoutDashboard size={18} />
-              <span>Go to Dashboard</span>
+              <span>{t.nav.goToDashboard}</span>
             </Link>
           )}
         </nav>
@@ -326,14 +342,14 @@ function MobileMenu({ isOpen, onClose, pathname, isLoggedIn, user, onLogout }: M
                 onClick={onClose}
                 className={cn(buttonVariants({ variant: "outline", size: "md" }), "w-full text-center")}
               >
-                Sign in
+                {t.nav.login}
               </Link>
               <Link
                 href="/register"
                 onClick={onClose}
                 className={cn(buttonVariants({ variant: "primary", size: "md" }), "w-full text-center")}
               >
-                Get started free
+                {t.nav.getStartedFree}
               </Link>
             </>
           )}
@@ -382,7 +398,8 @@ export function Navbar() {
             </div>
 
             {/* Right: Actions */}
-            <div className="hidden lg:flex">
+            <div className="hidden lg:flex items-center gap-2">
+              <LanguageSwitcher />
               <NavActions user={user} isLoggedIn={isLoggedIn} onLogout={handleLogout} />
             </div>
 

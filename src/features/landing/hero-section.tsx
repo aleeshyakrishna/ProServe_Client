@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Search, MapPin, ChevronDown, ShieldCheck, Star, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/I18nProvider";
+import { serviceName } from "@/i18n/service-names";
 import { cn } from "@/lib/utils";
 
 // ------ Search Bar ------------------------------------------
@@ -20,6 +22,7 @@ const POPULAR_SEARCHES = [
 import { useRouter } from "next/navigation";
 
 function HeroSearchBar() {
+  const { t } = useI18n();
   const router = useRouter();
   const [query, setQuery] = React.useState("");
   const [location, setLocation] = React.useState("Dubai");
@@ -56,7 +59,7 @@ function HeroSearchBar() {
         "p-2",
       )}
       role="search"
-      aria-label="Search for services"
+      aria-label={t.hero.searchFormAria}
     >
       <div className="flex flex-col sm:flex-row gap-2">
         {/* Service search */}
@@ -66,9 +69,9 @@ function HeroSearchBar() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="What service do you need?"
+            placeholder={t.hero.searchPlaceholder}
             className="w-full bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] focus:outline-none"
-            aria-label="Search for a service"
+            aria-label={t.hero.searchInputAria}
           />
         </div>
 
@@ -78,25 +81,25 @@ function HeroSearchBar() {
           <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full bg-transparent text-sm font-medium text-[var(--text-primary)] focus:outline-none cursor-pointer appearance-none pr-4"
-            aria-label="Select location"
+            className="w-full bg-transparent text-sm font-medium text-[var(--text-primary)] focus:outline-none cursor-pointer appearance-none pe-4"
+            aria-label={t.hero.locationAria}
           >
-            <option value="Dubai">Dubai</option>
-            <option value="Abu Dhabi">Abu Dhabi</option>
-            <option value="Sharjah">Sharjah</option>
+            <option value="Dubai">{t.hero.cities.dubai}</option>
+            <option value="Abu Dhabi">{t.hero.cities.abuDhabi}</option>
+            <option value="Sharjah">{t.hero.cities.sharjah}</option>
           </select>
-          <ChevronDown size={14} className="text-[var(--text-tertiary)] shrink-0 -ml-4 pointer-events-none" aria-hidden="true" />
+          <ChevronDown size={14} className="text-[var(--text-tertiary)] shrink-0 -ms-4 pointer-events-none" aria-hidden="true" />
         </div>
 
         {/* CTA */}
         <Button type="submit" variant="primary" size="lg" className="sm:w-auto w-full shrink-0 rounded-xl cursor-pointer">
-          Search
+          {t.hero.search}
         </Button>
       </div>
 
       {/* Popular searches */}
       <div className="flex items-center gap-2 flex-wrap px-2 pt-2 pb-1">
-        <span className="text-xs text-[var(--text-disabled)]">Popular:</span>
+        <span className="text-xs text-[var(--text-disabled)]">{t.hero.popular}</span>
         {POPULAR_SEARCHES.map((term) => (
           <button
             key={term}
@@ -109,7 +112,7 @@ function HeroSearchBar() {
               "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-navy-700 rounded",
             )}
           >
-            {term}
+            {serviceName(t, term)}
           </button>
         ))}
       </div>
@@ -120,18 +123,19 @@ function HeroSearchBar() {
 // ------ Trust Badges ----------------------------------------
 
 function TrustBadges() {
+  const { t } = useI18n();
   const badges = [
     {
       icon: <ShieldCheck size={16} className="text-emerald-500" />,
-      text: "Verified Providers",
+      text: t.hero.badges.verified,
     },
     {
       icon: <Star size={16} className="text-gold-500 fill-gold-500" />,
-      text: "4.9/5 Average Rating",
+      text: t.hero.badges.rating,
     },
     {
       icon: <Users size={16} className="text-navy-600" />,
-      text: "50,000+ Happy Customers",
+      text: t.hero.badges.customers,
     },
   ];
 
@@ -177,6 +181,7 @@ function FloatingCard({
 // ------ Hero Section ----------------------------------------
 
 export function HeroSection() {
+  const { t } = useI18n();
   return (
     <section
       className="relative min-h-screen flex items-center gradient-hero overflow-hidden pt-16"
@@ -208,7 +213,7 @@ export function HeroSection() {
           >
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 mb-6">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-              Now serving Dubai, Abu Dhabi & Sharjah
+              {t.hero.eyebrow}
             </span>
           </motion.div>
 
@@ -220,12 +225,12 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: [0, 0, 0.2, 1] }}
           >
-            Verified Professionals,{" "}
+            {t.hero.titleStart}{" "}
             <span className="relative inline-block">
-              <span className="relative z-10 text-navy-900">On Demand</span>
+              <span className="relative z-10 text-navy-900">{t.hero.titleHighlight}</span>
               <span
                 aria-hidden="true"
-                className="absolute bottom-2 left-0 right-0 h-3 bg-gold-300/60 -z-0 rounded-sm"
+                className="absolute bottom-2 inset-x-0 h-3 bg-gold-300/60 -z-0 rounded-sm"
               />
             </span>
           </motion.h1>
@@ -237,8 +242,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0, 0, 0.2, 1] }}
           >
-            Connect with background-checked, insured service professionals across the UAE. 
-            Book instantly, pay securely, and get the job done right.
+            {t.hero.subtitle}
           </motion.p>
 
           {/* Search */}
@@ -263,18 +267,18 @@ export function HeroSection() {
       </div>
 
       {/* Floating stat cards (desktop only) */}
-      <FloatingCard className="right-[8%] top-[30%]">
+      <FloatingCard className="end-[8%] top-[30%]">
         <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
           <ShieldCheck size={20} className="text-emerald-600" />
         </div>
         <div>
-          <p className="text-xs text-[var(--text-tertiary)]">Background verified</p>
-          <p className="text-sm font-bold text-[var(--text-primary)]">3,200+ Providers</p>
+          <p className="text-xs text-[var(--text-tertiary)]">{t.hero.floating.backgroundVerified}</p>
+          <p className="text-sm font-bold text-[var(--text-primary)]">{t.hero.floating.providers}</p>
         </div>
       </FloatingCard>
 
-      <FloatingCard className="right-[14%] bottom-[28%]">
-        <div className="flex -space-x-2 mr-1">
+      <FloatingCard className="end-[14%] bottom-[28%]">
+        <div className="flex -space-x-2 rtl:space-x-reverse me-1">
           {[
             { initials: "FA", color: "bg-navy-700" },
             { initials: "AK", color: "bg-emerald-600" },
@@ -294,7 +298,7 @@ export function HeroSection() {
               <Star key={i} size={10} className="fill-gold-500 stroke-gold-500" />
             ))}
           </div>
-          <p className="text-xs font-semibold text-[var(--text-primary)]">50,000+ Reviews</p>
+          <p className="text-xs font-semibold text-[var(--text-primary)]">{t.hero.floating.reviews}</p>
         </div>
       </FloatingCard>
     </section>

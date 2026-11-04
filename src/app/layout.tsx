@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display, Noto_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, APP_TAGLINE, APP_URL } from "@/constants";
 import { Preloader } from "@/components/layout/preloader";
 import { AIChatAssistant } from "@/components/ai/AIChatAssistant";
+import { getLocale } from "@/i18n/server";
+import { getDirection } from "@/i18n/config";
+import { I18nProvider } from "@/i18n/I18nProvider";
 
 // ------ Font Configuration ----------------------------------
 
@@ -20,6 +23,13 @@ const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
   weight: ["400", "500", "600", "700", "800"],
   style: ["normal", "italic"],
+});
+
+const notoArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  display: "swap",
+  variable: "--font-arabic",
+  weight: ["400", "500", "600", "700"],
 });
 
 // ------ SEO Metadata ----------------------------------------
@@ -107,19 +117,22 @@ import { AuthProvider } from "@/context/AuthContext";
 
 // ------ Root Layout -----------------------------------------
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
     <html
-      lang="en"
-      dir="ltr"
+      lang={locale}
+      dir={getDirection(locale)}
       suppressHydrationWarning
-      className={`${inter.variable} ${playfairDisplay.variable} h-full scroll-smooth`}
+      className={`${inter.variable} ${playfairDisplay.variable} ${notoArabic.variable} h-full scroll-smooth`}
     >
       <body className="min-h-full flex flex-col antialiased">
+        <I18nProvider locale={locale}>
         <AuthProvider>
           <BookingProvider>
             <Preloader />
@@ -127,6 +140,7 @@ export default function RootLayout({
             <AIChatAssistant />
           </BookingProvider>
         </AuthProvider>
+        </I18nProvider>
       </body>
     </html>
   );

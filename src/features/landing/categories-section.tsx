@@ -1,5 +1,8 @@
 "use client";
 
+import { useI18n } from "@/i18n/I18nProvider";
+import { serviceName } from "@/i18n/service-names";
+
 import Link from "next/link";
 import {
   Sparkles,
@@ -34,6 +37,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
 // ------ Category Card ---------------------------------------
 
 function CategoryCard({ category }: { category: Category }) {
+  const { t } = useI18n();
   const Icon = ICON_MAP[category.iconName.toLowerCase()] ?? Wrench;
 
   return (
@@ -48,7 +52,7 @@ function CategoryCard({ category }: { category: Category }) {
         "hover:border-emerald-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
       )}
-      aria-label={`${category.name} — ${category.serviceCount} services available`}
+      aria-label={`${serviceName(t, category.name)} — ${t.categories.servicesCount.replace("{count}", String(category.serviceCount))}`}
     >
       {/* Icon bubble */}
       <div
@@ -67,10 +71,10 @@ function CategoryCard({ category }: { category: Category }) {
       {/* Text */}
       <div className="space-y-1">
         <h3 className="text-sm font-semibold text-[var(--text-primary)] leading-tight">
-          {category.name}
+          {serviceName(t, category.name)}
         </h3>
         <p className="text-xs text-[var(--text-tertiary)]">
-          {category.serviceCount.toLocaleString("en-AE")} services
+          {t.categories.servicesCount.replace("{count}", category.serviceCount.toLocaleString("en-AE"))}
         </p>
       </div>
     </Link>
@@ -80,6 +84,7 @@ function CategoryCard({ category }: { category: Category }) {
 // ------ Section ---------------------------------------------
 
 export function CategoriesSection() {
+  const { t } = useI18n();
   const [categoriesList, setCategoriesList] = React.useState<Category[]>([]);
 
   React.useEffect(() => {
@@ -121,16 +126,16 @@ export function CategoriesSection() {
         <div className="flex items-end justify-between mb-10 gap-4">
           <div className="space-y-2 max-w-xl">
             <p className="text-sm font-semibold text-emerald-600 uppercase tracking-widest">
-              Browse by Category
+              {t.categories.eyebrow}
             </p>
             <h2
               id="categories-heading"
               className="text-[var(--text-primary)]"
             >
-              Find the Right Service
+              {t.categories.title}
             </h2>
             <p className="text-[var(--text-secondary)] text-base">
-              Explore our full range of professional services, all available on-demand across the UAE.
+              {t.categories.subtitle}
             </p>
           </div>
 
@@ -143,7 +148,7 @@ export function CategoriesSection() {
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded",
             )}
           >
-            View all services
+            {t.categories.viewAll}
             <ChevronRight size={16} aria-hidden="true" />
           </Link>
         </div>
@@ -151,7 +156,7 @@ export function CategoriesSection() {
         {/* Grid */}
         <div
           className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-          aria-label="Service categories"
+          aria-label={t.categories.listAria}
         >
           {categoriesList.map((category) => (
             <CategoryCard key={category.id} category={category} />
@@ -169,7 +174,7 @@ export function CategoriesSection() {
                 "hover:bg-[var(--bg-tertiary)] transition-colors",
               )}
             >
-              View all services
+              {t.categories.viewAll}
               <ChevronRight size={16} aria-hidden="true" />
             </button>
           </Link>

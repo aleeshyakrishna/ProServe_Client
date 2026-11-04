@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/i18n/I18nProvider";
 import Link from "next/link";
 import { ArrowRight, Smartphone, Star, ShieldCheck } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -6,6 +9,7 @@ import { cn } from "@/lib/utils";
 // ------ CTA Section -----------------------------------------
 
 export function CTASection() {
+  const { t } = useI18n();
   return (
     <section
       className="section-padding"
@@ -39,28 +43,27 @@ export function CTASection() {
               {/* Pill */}
               <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-white/90">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
-                Trusted by 50,000+ Customers
+                {t.cta.eyebrow}
               </span>
 
               <h2
                 id="cta-heading"
                 className="text-display text-white"
               >
-                Ready to Find Your{" "}
-                <span className="text-gold-400">Perfect Professional?</span>
+                {t.cta.titleStart}{" "}
+                <span className="text-gold-400">{t.cta.titleHighlight}</span>
               </h2>
 
               <p className="text-navy-300 text-base leading-relaxed">
-                Join thousands of UAE households and businesses who trust ProServe 
-                for all their service needs. Your first booking comes with a 100% satisfaction guarantee.
+                {t.cta.subtitle}
               </p>
 
               {/* Trust badges */}
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                 {[
-                  { icon: <ShieldCheck size={14} className="text-emerald-400" />, text: "Verified Providers" },
-                  { icon: <Star size={14} className="text-gold-400 fill-gold-400" />, text: "4.9/5 Rating" },
-                  { icon: <ShieldCheck size={14} className="text-emerald-400" />, text: "Secure Payments" },
+                  { icon: <ShieldCheck size={14} className="text-emerald-400" />, text: t.cta.badges.verified },
+                  { icon: <Star size={14} className="text-gold-400 fill-gold-400" />, text: t.cta.badges.rating },
+                  { icon: <ShieldCheck size={14} className="text-emerald-400" />, text: t.cta.badges.secure },
                 ].map(({ icon, text }) => (
                   <div key={text} className="flex items-center gap-1.5 text-sm text-navy-300">
                     {icon}
@@ -78,7 +81,7 @@ export function CTASection() {
                     "w-full sm:w-auto rounded-xl flex items-center justify-center gap-1.5"
                   )}
                 >
-                  Get Started Free
+                  {t.cta.getStarted}
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
                 <Link
@@ -88,7 +91,7 @@ export function CTASection() {
                     "w-full sm:w-auto rounded-xl border-white/20 text-white hover:bg-white/10 hover:border-white/30 text-center"
                   )}
                 >
-                  Browse Services
+                  {t.cta.browse}
                 </Link>
               </div>
             </div>
@@ -103,10 +106,10 @@ export function CTASection() {
             >
               <div className="space-y-1">
                 <h3 className="text-lg font-bold text-white">
-                  Are you a service professional?
+                  {t.cta.proTitle}
                 </h3>
                 <p className="text-sm text-navy-300">
-                  Join 3,200+ verified providers earning on ProServe.
+                  {t.cta.proSubtitle}
                 </p>
               </div>
 
@@ -135,7 +138,7 @@ export function CTASection() {
                   "w-full text-center rounded-xl border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 )}
               >
-                Join as a Provider
+                {t.cta.joinProvider}
               </Link>
             </div>
           </div>
@@ -145,7 +148,7 @@ export function CTASection() {
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6 text-center">
           <div className="flex items-center gap-2 text-sm text-[var(--text-tertiary)]">
             <Smartphone size={16} aria-hidden="true" />
-            Also available on mobile
+            {t.cta.mobile}
           </div>
           <div className="flex items-center gap-3">
             {/* App Store */}
@@ -158,7 +161,7 @@ export function CTASection() {
                 "hover:bg-[var(--bg-secondary)] transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700",
               )}
-              aria-label="Download on the App Store"
+              aria-label={t.footer.appStoreAria}
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
@@ -176,7 +179,7 @@ export function CTASection() {
                 "hover:bg-[var(--bg-secondary)] transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700",
               )}
-              aria-label="Get it on Google Play"
+              aria-label={t.footer.playAria}
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M3.18 23.76c.37.2.8.2 1.18.02L15.34 12 4.36.22C3.98.04 3.55.04 3.18.24 2.44.64 2 1.42 2 2.28V21.7c0 .87.44 1.67 1.18 2.06z" fill="#32BBFF"/>

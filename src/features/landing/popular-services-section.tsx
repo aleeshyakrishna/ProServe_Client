@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n/I18nProvider";
+
 import Link from "next/link";
 import { MapPin, Clock, Star, ShieldCheck, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +16,7 @@ import api from "@/lib/axios";
 // ------ Service Card ----------------------------------------
 
 function ServiceCard({ service }: { service: Service }) {
+  const { t } = useI18n();
   const priceDisplay =
     service.pricingType === "quoted"
       ? "Custom Quote"
@@ -50,7 +53,7 @@ function ServiceCard({ service }: { service: Service }) {
         {/* Featured badge */}
         {service.isFeatured && (
           <div className="absolute top-3 right-3">
-            <Badge variant="accent" size="sm">Featured</Badge>
+            <Badge variant="accent" size="sm">{t.popular.featured}</Badge>
           </div>
         )}
 
@@ -122,8 +125,8 @@ function ServiceCard({ service }: { service: Service }) {
               </p>
               {service.provider.isVerified && (
                 <div className="flex items-center gap-0.5">
-                  <ShieldCheck size={10} className="text-emerald-500" aria-label="Verified" />
-                  <span className="text-[10px] text-emerald-600">Verified</span>
+                  <ShieldCheck size={10} className="text-emerald-500" aria-label={t.popular.verified} />
+                  <span className="text-[10px] text-emerald-600">{t.popular.verified}</span>
                 </div>
               )}
             </div>
@@ -133,7 +136,7 @@ function ServiceCard({ service }: { service: Service }) {
           <div className="text-right shrink-0">
             <p className="text-sm font-bold text-navy-900">{priceDisplay}</p>
             {service.pricingType !== "quoted" && (
-              <p className="text-[10px] text-[var(--text-disabled)]">per service</p>
+              <p className="text-[10px] text-[var(--text-disabled)]">{t.popular.perService}</p>
             )}
           </div>
         </div>
@@ -151,7 +154,7 @@ function ServiceCard({ service }: { service: Service }) {
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700",
           )}
         >
-          Book Now
+          {t.popular.bookNow}
         </Link>
       </div>
     </article>
@@ -161,6 +164,7 @@ function ServiceCard({ service }: { service: Service }) {
 // ------ Section ---------------------------------------------
 
 export function PopularServicesSection() {
+  const { t } = useI18n();
   const [servicesList, setServicesList] = React.useState<Service[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
@@ -228,13 +232,13 @@ export function PopularServicesSection() {
         <div className="flex items-end justify-between mb-10 gap-4">
           <div className="space-y-2 max-w-xl">
             <p className="text-sm font-semibold text-emerald-600 uppercase tracking-widest">
-              Most Booked
+              {t.popular.eyebrow}
             </p>
             <h2 id="popular-services-heading" className="text-[var(--text-primary)]">
-              Popular Services
+              {t.popular.title}
             </h2>
             <p className="text-[var(--text-secondary)] text-base">
-              Handpicked by our UAE customers. Every service comes with a satisfaction guarantee.
+              {t.popular.subtitle}
             </p>
           </div>
 
@@ -247,7 +251,7 @@ export function PopularServicesSection() {
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded",
             )}
           >
-            Browse all services
+            {t.popular.browseAll}
             <ChevronRight size={16} aria-hidden="true" />
           </Link>
         </div>
@@ -255,7 +259,7 @@ export function PopularServicesSection() {
         {/* Grid */}
         <div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          aria-label="Popular services"
+          aria-label={t.popular.listAria}
         >
           {servicesList.map((service) => (
             <ServiceCard key={service.id} service={service} />

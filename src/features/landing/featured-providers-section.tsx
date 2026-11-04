@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/i18n/I18nProvider";
 import Link from "next/link";
 import { ShieldCheck, Clock, ChevronRight, BadgeCheck, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,6 +12,7 @@ import type { Provider } from "@/types";
 // ------ Provider Card ---------------------------------------
 
 function ProviderCard({ provider }: { provider: Provider }) {
+  const { t } = useI18n();
   return (
     <article
       className={cn(
@@ -43,7 +47,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
                 "bg-emerald-500 border-2 border-[var(--surface-card)]",
                 "flex items-center justify-center",
               )}
-              aria-label="Verified provider"
+              aria-label={t.providers.verifiedAria}
             >
               <BadgeCheck size={12} className="text-white" aria-hidden="true" />
             </div>
@@ -68,7 +72,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
             </div>
             {provider.isFeatured && (
               <Badge variant="accent" size="sm" className="shrink-0">
-                Featured
+                {t.providers.featured}
               </Badge>
             )}
           </div>
@@ -93,7 +97,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
             <p className="text-sm font-bold text-[var(--text-primary)] leading-none">
               {provider.completedJobs.toLocaleString("en-AE")}+
             </p>
-            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">Jobs done</p>
+            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{t.providers.jobsDone}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--bg-secondary)]">
@@ -102,7 +106,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
             <p className="text-sm font-bold text-[var(--text-primary)] leading-none">
               {provider.responseTime}
             </p>
-            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">Response</p>
+            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{t.providers.response}</p>
           </div>
         </div>
       </div>
@@ -127,7 +131,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700",
         )}
       >
-        View Profile
+        {t.providers.viewProfile}
         <ChevronRight size={14} aria-hidden="true" />
       </Link>
     </article>
@@ -137,6 +141,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
 // ------ Section ---------------------------------------------
 
 export function FeaturedProvidersSection() {
+  const { t } = useI18n();
   return (
     <section
       className="section-padding bg-[var(--bg-secondary)]"
@@ -147,13 +152,13 @@ export function FeaturedProvidersSection() {
         <div className="flex items-end justify-between mb-10 gap-4">
           <div className="space-y-2 max-w-xl">
             <p className="text-sm font-semibold text-emerald-600 uppercase tracking-widest">
-              Top Rated
+              {t.providers.eyebrow}
             </p>
             <h2 id="providers-heading" className="text-[var(--text-primary)]">
-              Featured Providers
+              {t.providers.title}
             </h2>
             <p className="text-[var(--text-secondary)] text-base">
-              Every provider is background-checked, insured, and rated by real customers.
+              {t.providers.subtitle}
             </p>
           </div>
 
@@ -166,7 +171,7 @@ export function FeaturedProvidersSection() {
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded",
             )}
           >
-            View all providers
+            {t.providers.viewAll}
             <ChevronRight size={16} aria-hidden="true" />
           </Link>
         </div>
@@ -174,7 +179,7 @@ export function FeaturedProvidersSection() {
         {/* Grid */}
         <div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          aria-label="Featured service providers"
+          aria-label={t.providers.listAria}
         >
           {FEATURED_PROVIDERS.map((provider) => (
             <ProviderCard key={provider.id} provider={provider} />
@@ -184,10 +189,10 @@ export function FeaturedProvidersSection() {
         {/* Trust Strip */}
         <div className="mt-12 flex flex-wrap items-center justify-center gap-8 p-6 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-subtle)]">
           {[
-            { icon: <ShieldCheck size={18} className="text-emerald-500" />, text: "Background Checked" },
-            { icon: <BadgeCheck size={18} className="text-navy-700" />, text: "Identity Verified" },
-            { icon: <Briefcase size={18} className="text-gold-600" />, text: "Professionally Insured" },
-            { icon: <Clock size={18} className="text-emerald-500" />, text: "Fast Response Guarantee" },
+            { icon: <ShieldCheck size={18} className="text-emerald-500" />, text: t.providers.trust.backgroundChecked },
+            { icon: <BadgeCheck size={18} className="text-navy-700" />, text: t.providers.trust.identityVerified },
+            { icon: <Briefcase size={18} className="text-gold-600" />, text: t.providers.trust.insured },
+            { icon: <Clock size={18} className="text-emerald-500" />, text: t.providers.trust.fastResponse },
           ].map(({ icon, text }) => (
             <div key={text} className="flex items-center gap-2.5">
               {icon}

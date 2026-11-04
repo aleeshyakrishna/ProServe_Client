@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n/I18nProvider";
+
 import * as React from "react";
 import { Search, CalendarCheck, ShieldCheck, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -51,6 +53,7 @@ const STEPS = [
 // ------ Section Component -----------------------------------
 
 export function HowItWorksSection() {
+  const { t } = useI18n();
   return (
     <section
       id="how-it-works"
@@ -69,13 +72,13 @@ export function HowItWorksSection() {
         <div className="text-center max-w-2xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-bold text-white/60 uppercase tracking-widest">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Simple Process
+            {t.how.eyebrow}
           </div>
           <h2 id="how-it-works-heading" className="text-white">
-            How ProServe Works
+            {t.how.title}
           </h2>
           <p className="text-navy-300 text-sm leading-relaxed">
-            From search to completion in three simple steps — we handle the vetting so you can enjoy the results.
+            {t.how.subtitle}
           </p>
         </div>
 
@@ -131,10 +134,10 @@ export function HowItWorksSection() {
                   {/* Text */}
                   <div className="space-y-2 relative z-10 flex-1">
                     <h3 className="text-base font-bold text-white">
-                      {step.title}
+                      {t.how.steps[idx]?.title ?? step.title}
                     </h3>
                     <p className="text-sm text-navy-300 leading-relaxed">
-                      {step.description}
+                      {t.how.steps[idx]?.description ?? step.description}
                     </p>
                   </div>
                 </div>

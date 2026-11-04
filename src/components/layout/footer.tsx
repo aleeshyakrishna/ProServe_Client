@@ -1,3 +1,10 @@
+"use client";
+
+import { useI18n } from "@/i18n/I18nProvider";
+import type { Dictionary } from "@/i18n/dictionaries";
+
+const footerLabel = (t: Dictionary, label: string) =>
+  (t.footer.labels as Record<string, string>)[label] ?? label;
 import Link from "next/link";
 import { Instagram, Twitter, Linkedin, Facebook, MapPin, Phone, Mail } from "lucide-react";
 import { APP_NAME } from "@/constants";
@@ -59,6 +66,7 @@ const SOCIAL_LINKS = [
 // ------ Sub-components -------------------------------------
 
 function FooterLogo() {
+  const { t } = useI18n();
   return (
     <div className="space-y-4">
       <Link
@@ -74,14 +82,14 @@ function FooterLogo() {
         </span>
       </Link>
       <p className="text-sm text-navy-300 leading-relaxed max-w-xs">
-        Connecting UAE households and businesses with verified, professional service providers. Trusted by 50,000+ customers.
+        {t.footer.tagline}
       </p>
 
       {/* Contact Info */}
       <address className="not-italic space-y-2">
         <div className="flex items-center gap-2 text-sm text-navy-300">
           <MapPin size={14} className="shrink-0 text-emerald-400" aria-hidden="true" />
-          <span>Dubai, United Arab Emirates</span>
+          <span>{t.footer.address}</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-navy-300">
           <Phone size={14} className="shrink-0 text-emerald-400" aria-hidden="true" />
@@ -107,6 +115,7 @@ function FooterNavSection({
   title: string;
   links: ReadonlyArray<{ label: string; href: string }>;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-white uppercase tracking-widest">
@@ -119,7 +128,7 @@ function FooterNavSection({
               href={link.href}
               className="text-sm text-navy-300 hover:text-white transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded"
             >
-              {link.label}
+              {footerLabel(t, link.label)}
             </Link>
           </li>
         ))}
@@ -156,10 +165,11 @@ function SocialLinks() {
 // ------ App Store Badges ------------------------------------
 
 function AppStoreBadges() {
+  const { t } = useI18n();
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-white uppercase tracking-widest">
-        Download the App
+        {t.footer.downloadApp}
       </h3>
       <div className="flex flex-col gap-3">
         {/* App Store */}
@@ -172,7 +182,7 @@ function AppStoreBadges() {
             "transition-all duration-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           )}
-          aria-label="Download on the App Store"
+          aria-label={t.footer.appStoreAria}
         >
           <svg className="h-6 w-6 text-white shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
@@ -193,7 +203,7 @@ function AppStoreBadges() {
             "transition-all duration-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           )}
-          aria-label="Get it on Google Play"
+          aria-label={t.footer.playAria}
         >
           <svg className="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M3.18 23.76c.37.2.8.2 1.18.02L15.34 12 4.36.22C3.98.04 3.55.04 3.18.24 2.44.64 2 1.42 2 2.28V21.7c0 .87.44 1.67 1.18 2.06z" fill="#32BBFF"/>
@@ -214,6 +224,7 @@ function AppStoreBadges() {
 // ------ Footer Root -----------------------------------------
 
 export function Footer() {
+  const { t } = useI18n();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -231,15 +242,15 @@ export function Footer() {
 
           {/* Nav columns */}
           <FooterNavSection
-            title={FOOTER_LINKS.services.title}
+            title={footerLabel(t, FOOTER_LINKS.services.title)}
             links={FOOTER_LINKS.services.links}
           />
           <FooterNavSection
-            title={FOOTER_LINKS.company.title}
+            title={footerLabel(t, FOOTER_LINKS.company.title)}
             links={FOOTER_LINKS.company.links}
           />
           <FooterNavSection
-            title={FOOTER_LINKS.support.title}
+            title={footerLabel(t, FOOTER_LINKS.support.title)}
             links={FOOTER_LINKS.support.links}
           />
           <AppStoreBadges />
@@ -252,9 +263,8 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="container-section py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-navy-500 text-center sm:text-left">
-            © {currentYear} {APP_NAME} Technologies LLC. All rights reserved.
-            Registered in Dubai, UAE.
+          <p className="text-xs text-navy-500 text-center sm:text-start">
+            © {currentYear} {APP_NAME} Technologies LLC. {t.footer.rights}
           </p>
 
           <div className="flex items-center gap-4 flex-wrap justify-center">
@@ -264,7 +274,7 @@ export function Footer() {
                 href={link.href}
                 className="text-xs text-navy-500 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded"
               >
-                {link.label}
+                {footerLabel(t, link.label)}
               </Link>
             ))}
           </div>

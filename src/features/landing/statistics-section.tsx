@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n/I18nProvider";
+
 import * as React from "react";
 import { motion, useInView } from "framer-motion";
 import { PLATFORM_STATS } from "@/constants";
@@ -38,6 +40,7 @@ function StatCard({
   stat: (typeof PLATFORM_STATS)[number];
   index: number;
 }) {
+  const { t } = useI18n();
   return (
     <motion.div
       className={cn(
@@ -57,19 +60,19 @@ function StatCard({
       {/* Value */}
       <p
         className="text-display text-4xl lg:text-5xl font-bold text-white mb-2"
-        aria-label={`${stat.value} ${stat.label}`}
+        aria-label={`${stat.value} ${t.stats.items[index]?.label ?? stat.label}`}
       >
         <AnimatedCounter value={stat.value} />
       </p>
 
       {/* Label */}
       <p className="text-base font-semibold text-white/90 mb-1">
-        {stat.label}
+        {t.stats.items[index]?.label ?? stat.label}
       </p>
 
       {/* Description */}
       <p className="text-sm text-navy-300">
-        {stat.description}
+        {t.stats.items[index]?.description ?? stat.description}
       </p>
     </motion.div>
   );
@@ -78,6 +81,7 @@ function StatCard({
 // ------ Section ---------------------------------------------
 
 export function StatisticsSection() {
+  const { t } = useI18n();
   return (
     <section
       className="section-padding gradient-navy relative overflow-hidden"
@@ -100,23 +104,23 @@ export function StatisticsSection() {
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
           <p className="text-sm font-semibold text-emerald-400 uppercase tracking-widest">
-            By the Numbers
+            {t.stats.eyebrow}
           </p>
           <h2
             id="statistics-heading"
             className="text-white text-display"
           >
-            Trusted Across the UAE
+            {t.stats.title}
           </h2>
           <p className="text-navy-300 text-base">
-            Numbers that reflect the trust thousands of customers place in ProServe every day.
+            {t.stats.subtitle}
           </p>
         </div>
 
         {/* Stats grid */}
         <div
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"
-          aria-label="Platform statistics"
+          aria-label={t.stats.listAria}
         >
           {PLATFORM_STATS.map((stat, i) => (
             <StatCard key={stat.label} stat={stat} index={i} />

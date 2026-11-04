@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n/I18nProvider";
+
 import * as React from "react";
 import { Quote, Star, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -148,6 +150,7 @@ function TestimonialCard({
 // ------ Main Section -------------------------------------------
 
 export function ReviewsSection() {
+  const { t } = useI18n();
   const total = TESTIMONIALS.length;
   const [current, setCurrent] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
@@ -187,13 +190,13 @@ export function ReviewsSection() {
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-xs font-bold select-none">
             <Star size={11} className="fill-amber-500 text-amber-500" />
-            <span>4.9 / 5 &nbsp;·&nbsp; 50,000+ Happy Customers</span>
+            <span>{t.reviews.eyebrow}</span>
           </div>
           <h2 id="reviews-heading" className="text-[var(--text-primary)]">
-            What Our Customers Say
+            {t.reviews.title}
           </h2>
           <p className="text-[var(--text-secondary)] text-sm">
-            Verified reviews from Dubai, Abu Dhabi, and Sharjah residents — unfiltered and authentic.
+            {t.reviews.subtitle}
           </p>
         </div>
 
@@ -201,7 +204,7 @@ export function ReviewsSection() {
         <div
           className="relative"
           aria-roledescription="carousel"
-          aria-label="Customer testimonials"
+          aria-label={t.reviews.listAria}
         >
           {/* 3-card layout */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1.18fr_1fr] gap-4 items-center">
@@ -226,13 +229,13 @@ export function ReviewsSection() {
                 "hover:bg-navy-950 hover:text-white hover:border-navy-950 hover:scale-105",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700"
               )}
-              aria-label="Previous review"
+              aria-label={t.reviews.prev}
             >
               <ChevronLeft size={17} />
             </button>
 
             {/* Dot indicators */}
-            <div className="flex items-center gap-2" role="tablist" aria-label="Review navigation">
+            <div className="flex items-center gap-2" role="tablist" aria-label={t.reviews.navAria}>
               {TESTIMONIALS.map((_, i) => (
                 <button
                   key={i}
@@ -260,7 +263,7 @@ export function ReviewsSection() {
                 "hover:bg-navy-950 hover:text-white hover:border-navy-950 hover:scale-105",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700"
               )}
-              aria-label="Next review"
+              aria-label={t.reviews.next}
             >
               <ChevronRight size={17} />
             </button>

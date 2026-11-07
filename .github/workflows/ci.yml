@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  # Dummy API URL for CI: the landing page falls back to built-in sample data when the API is unreachable.
+  NEXT_PUBLIC_API_URL: http://localhost:5001
+
+jobs:
+  unit:
+    name: Type-check and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check
+        run: npx tsc --noEmit
+      - name: Unit tests (Vitest)
+        run: npm test
+
+  e2e:
+    name: End-to-end tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Build app
+        run: npm run build
+      # playwright.config.ts starts the built app on port 3001 (webServer) before the tests run.
+      - name: Run Playwright tests
+        run: npx playwright test
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

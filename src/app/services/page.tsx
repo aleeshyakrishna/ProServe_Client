@@ -21,6 +21,8 @@ import {
   ThumbsUp,
   Lock,
   UserCheck,
+  ArrowUpDown,
+  ChevronDown,
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +33,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { EmptyState, ErrorState } from "@/components/common/empty-state";
 import { FAQSection } from "@/components/common/FAQSection";
+import { MobileFilterModal } from "@/components/common/MobileFilterModal";
 
 // ------ Icon Map -------------------------------------------
 
@@ -106,6 +109,13 @@ function ServiceCardSkeleton() {
   );
 }
 
+const SORT_OPTIONS = [
+  { value: "popular", label: "Recommended" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "rating", label: "Highest Rated" },
+];
+
 // ------ Inner Content Component (Consumes useSearchParams) --
 
 function ServicesContent() {
@@ -124,445 +134,540 @@ function ServicesContent() {
     availableLocations,
   } = useServiceFilters(services);
 
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
+  const activeFilterCount = (selectedCategory !== "all" ? 1 : 0) + (selectedLocation !== "all" ? 1 : 0);
+
   return (
     <>
       <Navbar />
 
       <main id="main-content" className="flex-1 pt-16 lg:pt-18 bg-[var(--bg-primary)]">
         {/* Clean Compact Top Search Bar */}
-        <div className="!pt-24 pb-6 bg-white border-b border-[var(--border-subtle)]">
-          <div className="container-section max-w-4xl space-y-4">
-            <div className="w-full relative">
-              <label htmlFor="search-services-input" className="sr-only">
-                Search for any service
-              </label>
-              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-[var(--text-tertiary)]">
-                <Search size={20} />
-              </div>
-              <input
-                id="search-services-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => handleQueryChange(e.target.value)}
-                placeholder="Search home cleaning, AC repair, plumbing..."
-                className={cn(
-                  "w-full h-12 pl-12 pr-16 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]",
-                  "text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]",
-                  "focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500",
-                  "transition-all duration-200"
-                )}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => handleQueryChange("")}
-                  className="absolute right-4 inset-y-0 text-xs font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] cursor-pointer"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Quick Popular Pills */}
-            {/* <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-[var(--text-tertiary)] font-semibold">Popular:</span>
-              {categories.slice(0, 5).map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategoryChange(cat.slug)}
-                  className={cn(
-                    "px-3 py-1 rounded-full border text-xs font-medium transition-all cursor-pointer",
-                    selectedCategory === cat.slug
-                      ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold"
-                      : "bg-white border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-navy-200"
-                  )}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div> */}
-          </div>
-        </div>
-
-        {/* ==========================================
-            SERVICES FILTER & LISTING SECTION
-            ========================================== */}
-        <section className="section-padding bg-white" aria-label="Services listing">
-          <div className="container-section">
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Sidebar Filters */}
-              <aside className="w-full lg:w-64 lg:min-w-[256px] lg:max-w-[256px] shrink-0 flex flex-col gap-6" aria-label="Filters">
-                {/* Active filters tag indicator if active */}
-                {(selectedCategory !== "all" || selectedLocation !== "all" || searchQuery) && (
-                  <div className="p-4 rounded-xl bg-navy-50/50 border border-navy-100 flex items-center justify-between">
-                    <span className="text-xs text-navy-800 font-medium">Active filters</span>
-                    <button
-                      onClick={handleClearAllFilters}
-                      className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                )}
-
-                {/* Categories Accordion Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                    <SlidersHorizontal size={16} />
-                    Categories
-                  </h3>
-                  <div className="flex flex-col gap-1.5" role="tablist">
-                    <button
-                      onClick={() => handleCategoryChange("all")}
-                      className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
-                        selectedCategory === "all"
-                          ? "bg-navy-900 text-white font-semibold"
-                          : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
-                      )}
-                      role="tab"
-                      aria-selected={selectedCategory === "all"}
-                    >
-                      <span>All Services</span>
-                      <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", selectedCategory === "all" ? "bg-navy-800 text-white" : "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]")}>
-                        {services.length}
-                      </span>
-                    </button>
-
-                    {categories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => handleCategoryChange(cat.slug)}
-                        className={cn(
-                          "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
-                          selectedCategory === cat.slug
-                            ? "bg-navy-900 text-white font-semibold"
-                            : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
-                        )}
-                        role="tab"
-                        aria-selected={selectedCategory === cat.slug}
-                      >
-                        <div className="flex items-center gap-2">
-                          <CategoryIcon name={cat.iconName} size={14} className={selectedCategory === cat.slug ? "text-emerald-400" : "text-[var(--text-tertiary)]"} />
-                          <span>{cat.name}</span>
-                        </div>
-                        <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", selectedCategory === cat.slug ? "bg-navy-800 text-white" : "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]")}>
-                          {cat.serviceCount}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Location Filter Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                    <MapPin size={16} className="text-emerald-600" />
-                    Location
-                  </h3>
-                  <div className="relative">
-                    <label htmlFor="services-location-select" className="sr-only">
-                      Filter services by location
-                    </label>
-                    <select
-                      id="services-location-select"
-                      value={selectedLocation}
-                      onChange={(e) => handleLocationChange(e.target.value)}
-                      className="w-full bg-white border border-[var(--border-subtle)] rounded-xl px-3 h-10 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                    >
-                      {availableLocations.map((loc) => (
-                        <option key={loc.value} value={loc.value}>
-                          {loc.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Sort Panel */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)]">Sort By</h3>
-                  <div className="flex flex-col gap-2">
-                    {[
-                      { value: "popular", label: "Recommended" },
-                      { value: "price_asc", label: "Price: Low to High" },
-                      { value: "price_desc", label: "Price: High to Low" },
-                      { value: "rating", label: "Highest Rated" },
-                    ].map((opt) => (
-                      <label key={opt.value} className="flex items-center gap-2.5 text-xs text-[var(--text-secondary)] cursor-pointer">
-                        <input
-                          type="radio"
-                          name="sortBy"
-                          value={opt.value}
-                          checked={sortBy === opt.value}
-                          onChange={() => setSortBy(opt.value)}
-                          className="h-4 w-4 border-[var(--border-default)] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
-                        />
-                        <span>{opt.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </aside>
-
-              {/* Main Services Listings Panel */}
-              <div className="flex-1 min-w-0 flex flex-col gap-6">
-                {/* Result header count */}
-                <div className="flex items-center justify-between pb-4 border-b border-[var(--border-subtle)]">
-                  <div className="space-y-1">
-                    <h2 className="text-lg font-bold text-[var(--text-primary)]">
-                      {selectedCategory === "all" ? "All Offerings" : categories.find((c) => c.slug === selectedCategory)?.name}
-                    </h2>
-                    <p className="text-xs text-[var(--text-tertiary)]">
-                      Showing {filteredServices.length} {filteredServices.length === 1 ? "service" : "services"} in the UAE
+          <div className="!pt-20 lg:!pt-24 pb-5 lg:pb-6 bg-white border-b border-[var(--border-subtle)]">
+            <div className="container-section max-w-4xl space-y-4">
+                  {/* Mobile Header Title */}
+                  <div className="lg:hidden space-y-1">
+                    <h1 className="text-xl font-extrabold text-navy-950 tracking-tight">
+                      Find a <span className="text-emerald-600">Verified Service</span>
+                    </h1>
+                    <p className="text-xs text-[var(--text-tertiary)] leading-relaxed">
+                      Discover trusted, background-checked professionals across the UAE.
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="mobile-sort-select" className="sr-only">
-                      Sort services
-                    </label>
-                    <select
-                      id="mobile-sort-select"
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="bg-white border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                  {/* Search Input Container */}
+                  <div className="space-y-2">
+                    <div className="w-full relative">
+                      <label htmlFor="search-services-input" className="sr-only">
+                        Search for any service
+                      </label>
+                      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-[var(--text-tertiary)]">
+                        <Search size={18} />
+                      </div>
+                      <input
+                        id="search-services-input"
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => handleQueryChange(e.target.value)}
+                        placeholder="Search home cleaning, AC repair, plumbing..."
+                        className={cn(
+                          "w-full h-12 pl-11 pr-16 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]",
+                          "text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]",
+                          "focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500",
+                          "transition-all duration-200"
+                        )}
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => handleQueryChange("")}
+                          className="absolute right-4 inset-y-0 text-xs font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] cursor-pointer"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Mobile Explicit Search Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById("search-services-input");
+                        el?.blur();
+                      }}
+                      className="lg:hidden w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2"
                     >
-                      <option value="popular">Recommended</option>
-                      <option value="price_asc">Price: Low to High</option>
-                      <option value="price_desc">Price: High to Low</option>
-                      <option value="rating">Highest Rated</option>
-                    </select>
+                      <span>Search</span>
+                    </button>
+                  </div>
+
+            {/* Mobile Controls: Sort Dropdown & Filters Popup Trigger */}
+                  <div className="lg:hidden pt-1 space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      {/* Mobile Sort Dropdown */}
+                      <div className="relative flex-1">
+                        <div className="w-full h-11 px-3.5 rounded-xl border border-[var(--border-subtle)] bg-white flex items-center justify-between text-xs font-semibold text-navy-900 shadow-xs pointer-events-none">
+                          <div className="flex items-center gap-2 truncate">
+                            <ArrowUpDown size={14} className="text-emerald-600 shrink-0" />
+                            <span className="truncate">
+                              {SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label || "Sort"}
+                            </span>
+                          </div>
+                          <ChevronDown size={14} className="text-[var(--text-tertiary)] shrink-0" />
+                        </div>
+                        <label htmlFor="mobile-sort-select" className="sr-only">
+                          Sort services
+                        </label>
+                        <select
+                          id="mobile-sort-select"
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-xs"
+                        >
+                          {SORT_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Mobile Filters Trigger Button */}
+                      <button
+                        type="button"
+                        onClick={() => setIsMobileFilterOpen(true)}
+                        className={cn(
+                    "flex-1 h-11 px-3.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-semibold transition-colors shadow-xs cursor-pointer",
+                          activeFilterCount > 0
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-800"
+                            : "border-[var(--border-subtle)] bg-white text-navy-900 hover:bg-neutral-50"
+                        )}
+                        aria-label="Open filter options"
+                      >
+                        <SlidersHorizontal size={14} className={activeFilterCount > 0 ? "text-emerald-700" : "text-emerald-600"} />
+                        <span>Filters</span>
+                        {activeFilterCount > 0 && (
+                          <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold leading-none">
+                            {activeFilterCount}
+                          </span>
+                        )}
+                      </button>
+                  </div>
+
+                  {/* Result Count Heading on Mobile */}
+                  <div className="pt-1">
+                    <p className="text-base font-extrabold text-navy-950">
+                      {filteredServices.length} {filteredServices.length === 1 ? "Service" : "Services"} Found
+                    </p>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Listing grid / states */}
-                {isLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <ServiceCardSkeleton key={i} />
-                    ))}
-                  </div>
-                ) : isError ? (
-                  <ErrorState
-                    title="Could not load services"
-                    description="Our server encountered an issue fetching active services. Please try again."
-                    onRetry={reload}
-                  />
-                ) : filteredServices.length === 0 ? (
-                  <EmptyState
-                    title="No matching services found"
-                    description="We couldn't find any services matching your search or active filters. Try adjusting your query."
-                    action={{
-                      label: "Reset All Filters",
-                      onClick: handleClearAllFilters,
-                    }}
-                  />
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-                    {filteredServices.map((service) => {
-                      const priceDisplay =
-                        service.pricingType === "quoted"
-                          ? "Custom Quote"
-                          : service.priceTo
-                            ? `${formatCurrency(service.priceFrom)} – ${formatCurrency(service.priceTo)}`
-                            : `From ${formatCurrency(service.priceFrom)}`;
-
-                      return (
-                        <article
-                          key={service.id}
-                          className={cn(
-                            "group flex flex-col",
-                            "rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)]",
-                            "overflow-hidden",
-                            "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-                            "hover:shadow-xl hover:-translate-y-1 hover:border-emerald-100"
-                          )}
-                        >
-                          {/* Top Visual Container */}
-                          <div
-                            className={cn(
-                              "h-44 w-full relative overflow-hidden bg-gradient-to-br",
-                              "from-navy-100 to-emerald-50",
-                              "shrink-0"
-                            )}
-                            aria-hidden="true"
-                          >
-                            <div className="absolute top-3 left-3">
-                              <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-navy-900 border-none font-semibold">
-                                {service.category.name}
-                              </Badge>
-                            </div>
-
-                            {service.isFeatured && (
-                              <div className="absolute top-3 right-3">
-                                <Badge variant="accent" className="font-semibold">Featured</Badge>
-                              </div>
-                            )}
-
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-110">
-                                <span className="text-xl font-bold text-navy-800">
-                                  {service.title[0]}
-                                </span>
-                              </div>
-                            </div>
+            {/* ==========================================
+            SERVICES FILTER & LISTING SECTION
+            ========================================== */}
+              <section className="py-6 lg:py-12 bg-white" aria-label="Services listing">
+                <div className="container-section">
+                  <div className="flex flex-col lg:flex-row gap-8">
+                      {/* Sidebar Filters - Desktop only */}
+                      <aside className="hidden lg:flex w-full lg:w-64 lg:min-w-[256px] lg:max-w-[256px] shrink-0 flex-col gap-6" aria-label="Filters">
+                        {/* Active filters tag indicator if active */}
+                        {(selectedCategory !== "all" || selectedLocation !== "all" || searchQuery) && (
+                          <div className="p-4 rounded-xl bg-navy-50/50 border border-navy-100 flex items-center justify-between">
+                            <span className="text-xs text-navy-800 font-medium">Active filters</span>
+                            <button
+                              onClick={handleClearAllFilters}
+                              className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
+                            >
+                              Clear All
+                            </button>
                           </div>
+                        )}
 
-                          {/* Content Container */}
-                          <div className="flex flex-col flex-1 p-5 gap-3.5">
-                            <div className="space-y-1">
-                              <Link
-                                href={`/services/${service.id}`}
-                                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded"
+                        {/* Categories Accordion Card */}
+                        <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
+                          <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+                            <SlidersHorizontal size={16} />
+                            Categories
+                          </h3>
+                          <div className="flex flex-col gap-1.5" role="tablist">
+                            <button
+                              onClick={() => handleCategoryChange("all")}
+                              className={cn(
+                                "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
+                                selectedCategory === "all"
+                                  ? "bg-navy-900 text-white font-semibold"
+                                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
+                              )}
+                              role="tab"
+                              aria-selected={selectedCategory === "all"}
+                            >
+                              <span>All Services</span>
+                              <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", selectedCategory === "all" ? "bg-navy-800 text-white" : "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]")}>
+                                {services.length}
+                              </span>
+                            </button>
+
+                            {categories.map((cat) => (
+                              <button
+                                key={cat.id}
+                                onClick={() => handleCategoryChange(cat.slug)}
+                                className={cn(
+                                  "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
+                                  selectedCategory === cat.slug
+                                    ? "bg-navy-900 text-white font-semibold"
+                                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
+                                )}
+                                role="tab"
+                                aria-selected={selectedCategory === cat.slug}
                               >
-                                <h3
-                                  className={cn(
-                                    "font-bold text-[var(--text-primary)] text-base leading-snug truncate",
-                                    "group-hover:text-emerald-600 transition-colors"
-                                  )}
-                                >
-                                  {service.title}
-                                </h3>
-                              </Link>
-                              <p className="text-xs text-[var(--text-tertiary)] line-clamp-2 leading-relaxed h-8">
-                                {service.description}
+                                <div className="flex items-center gap-2">
+                                  <CategoryIcon name={cat.iconName} size={14} className={selectedCategory === cat.slug ? "text-emerald-400" : "text-[var(--text-tertiary)]"} />
+                                  <span>{cat.name}</span>
+                                </div>
+                                <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", selectedCategory === cat.slug ? "bg-navy-800 text-white" : "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]")}>
+                                  {cat.serviceCount}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Location Filter Card */}
+                        <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
+                          <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+                            <MapPin size={16} className="text-emerald-600" />
+                            Location
+                          </h3>
+                          <div className="relative">
+                            <label htmlFor="services-location-select" className="sr-only">
+                              Filter services by location
+                            </label>
+                            <select
+                              id="services-location-select"
+                              value={selectedLocation}
+                              onChange={(e) => handleLocationChange(e.target.value)}
+                              className="w-full bg-white border border-[var(--border-subtle)] rounded-xl px-3 h-10 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                            >
+                              {availableLocations.map((loc) => (
+                                <option key={loc.value} value={loc.value}>
+                                  {loc.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Sort Panel */}
+                        <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
+                          <h3 className="text-sm font-bold text-[var(--text-primary)]">Sort By</h3>
+                          <div className="flex flex-col gap-2">
+                              {
+                                SORT_OPTIONS.map((opt) => (
+                                  <label key={opt.value} className="flex items-center gap-2.5 text-xs text-[var(--text-secondary)] cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="sortBy"
+                                      value={opt.value}
+                                      checked={sortBy === opt.value}
+                                      onChange={() => setSortBy(opt.value)}
+                                      className="h-4 w-4 border-[var(--border-default)] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
+                                    />
+                                    <span>{opt.label}</span>
+                                  </label>
+                                ))
+                              }
+                  </div>
+                        </div>
+                      </aside>
+
+                      {/* Main Services Listings Panel */}
+                      <div className="flex-1 min-w-0 flex flex-col gap-6">
+                          {/* Result header count - Desktop only */}
+                          <div className="hidden lg:flex items-center justify-between pb-4 border-b border-[var(--border-subtle)]">
+                            <div className="space-y-1">
+                              <h2 className="text-lg font-bold text-[var(--text-primary)]">
+                                {selectedCategory === "all" ? "All Offerings" : categories.find((c) => c.slug === selectedCategory)?.name}
+                              </h2>
+                              <p className="text-xs text-[var(--text-tertiary)]">
+                                Showing {filteredServices.length} {filteredServices.length === 1 ? "service" : "services"} in the UAE
                               </p>
                             </div>
 
-                            <div className="flex items-center justify-between text-xs text-[var(--text-tertiary)] pt-1">
-                              <Rating
-                                value={service.rating}
-                                showValue
-                                reviewCount={service.reviewCount}
-                                size="sm"
-                              />
-
-                              {service.duration && (
-                                <span className="flex items-center gap-1 font-medium bg-[var(--bg-secondary)] px-2 py-1 rounded-md text-[10px]">
-                                  <Clock size={11} aria-hidden="true" />
-                                  {service.duration}
-                                </span>
-                              )}
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="desktop-sort-select" className="sr-only">
+                                  Sort services
+                                </label>
+                                <select
+                                  id="desktop-sort-select"
+                                  value={sortBy}
+                                  onChange={(e) => setSortBy(e.target.value)}
+                                  className="bg-white border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                                >
+                                  {SORT_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </select>
                             </div>
-
-                            <div className="border-t border-[var(--border-subtle)]" />
-
-                            <div className="flex items-center justify-between gap-2 mt-auto">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <div className="h-7 w-7 rounded-full bg-navy-900 flex items-center justify-center text-white shrink-0">
-                                  <span className="text-[10px] font-bold">
-                                    {service.provider.businessName[0]}
-                                  </span>
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-[11px] font-semibold text-[var(--text-primary)] truncate">
-                                    {service.provider.businessName}
-                                  </p>
-                                  {service.provider.isVerified && (
-                                    <div className="flex items-center gap-0.5">
-                                      <ShieldCheck size={11} className="text-emerald-500" />
-                                      <span className="text-[9px] text-emerald-600 font-medium">Verified</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="text-right shrink-0">
-                                <p className="text-sm font-extrabold text-navy-950">{priceDisplay}</p>
-                                {service.pricingType !== "quoted" && (
-                                  <p className="text-[9px] text-[var(--text-disabled)] font-medium">per job</p>
-                                )}
-                              </div>
-                            </div>
-
-                            <Link
-                              href={`/booking?serviceId=${service.id}&providerId=${service.providerId}`}
-                              className={cn(
-                                "mt-1 flex items-center justify-center w-full h-10 rounded-xl font-bold text-xs transition-all duration-200",
-                                "bg-navy-50 text-navy-900 border border-navy-100",
-                                "group-hover:bg-navy-900 group-hover:text-white group-hover:border-navy-900",
-                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700"
-                              )}
-                            >
-                              Book Now
-                            </Link>
                           </div>
-                        </article>
+
+                          {/* Listing grid / states */}
+                          {isLoading ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                              {Array.from({ length: 6 }).map((_, i) => (
+                                <ServiceCardSkeleton key={i} />
+                              ))}
+                            </div>
+                          ) : isError ? (
+                            <ErrorState
+                              title="Could not load services"
+                              description="Our server encountered an issue fetching active services. Please try again."
+                              onRetry={reload}
+                            />
+                          ) : filteredServices.length === 0 ? (
+                            <EmptyState
+                              title="No matching services found"
+                              description="We couldn't find any services matching your search or active filters. Try adjusting your query."
+                              action={{
+                                label: "Reset All Filters",
+                                onClick: handleClearAllFilters,
+                              }}
+                            />
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                              {filteredServices.map((service) => {
+                                const priceDisplay =
+                                  service.pricingType === "quoted"
+                                    ? "Custom Quote"
+                                    : service.priceTo
+                                      ? `${formatCurrency(service.priceFrom)} – ${formatCurrency(service.priceTo)}`
+                                      : `From ${formatCurrency(service.priceFrom)}`;
+
+                                return (
+                                  <article
+                                    key={service.id}
+                                    className={cn(
+                                      "group flex flex-col",
+                                      "rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)]",
+                                      "overflow-hidden",
+                                      "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+                                      "hover:shadow-xl hover:-translate-y-1 hover:border-emerald-100"
+                                    )}
+                                  >
+                                    {/* Top Visual Container */}
+                                    <div
+                                      className={cn(
+                                        "h-44 w-full relative overflow-hidden bg-gradient-to-br",
+                                        "from-navy-100 to-emerald-50",
+                                        "shrink-0"
+                                      )}
+                                      aria-hidden="true"
+                                    >
+                                      <div className="absolute top-3 left-3">
+                                        <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-navy-900 border-none font-semibold">
+                                          {service.category.name}
+                                        </Badge>
+                                      </div>
+
+                                      {service.isFeatured && (
+                                        <div className="absolute top-3 right-3">
+                                          <Badge variant="accent" className="font-semibold">Featured</Badge>
+                                        </div>
+                                      )}
+
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-110">
+                                          <span className="text-xl font-bold text-navy-800">
+                                            {service.title[0]}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Content Container */}
+                                    <div className="flex flex-col flex-1 p-5 gap-3.5">
+                                      <div className="space-y-1">
+                                        <Link
+                                          href={`/services/${service.id}`}
+                                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded"
+                                        >
+                                          <h3
+                                            className={cn(
+                                              "font-bold text-[var(--text-primary)] text-base leading-snug truncate",
+                                              "group-hover:text-emerald-600 transition-colors"
+                                            )}
+                                          >
+                                            {service.title}
+                                          </h3>
+                                        </Link>
+                                        <p className="text-xs text-[var(--text-tertiary)] line-clamp-2 leading-relaxed h-8">
+                                          {service.description}
+                                        </p>
+                                      </div>
+
+                                      <div className="flex items-center justify-between text-xs text-[var(--text-tertiary)] pt-1">
+                                        <Rating
+                                          value={service.rating}
+                                          showValue
+                                          reviewCount={service.reviewCount}
+                                          size="sm"
+                                        />
+
+                                        {service.duration && (
+                                          <span className="flex items-center gap-1 font-medium bg-[var(--bg-secondary)] px-2 py-1 rounded-md text-[10px]">
+                                            <Clock size={11} aria-hidden="true" />
+                                            {service.duration}
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <div className="border-t border-[var(--border-subtle)]" />
+
+                                      <div className="flex items-center justify-between gap-2 mt-auto">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <div className="h-7 w-7 rounded-full bg-navy-900 flex items-center justify-center text-white shrink-0">
+                                            <span className="text-[10px] font-bold">
+                                              {service.provider.businessName[0]}
+                                            </span>
+                                          </div>
+                                          <div className="min-w-0">
+                                            <p className="text-[11px] font-semibold text-[var(--text-primary)] truncate">
+                                              {service.provider.businessName}
+                                            </p>
+                                            {service.provider.isVerified && (
+                                              <div className="flex items-center gap-0.5">
+                                                <ShieldCheck size={11} className="text-emerald-500" />
+                                                <span className="text-[9px] text-emerald-600 font-medium">Verified</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        <div className="text-right shrink-0">
+                                          <p className="text-sm font-extrabold text-navy-950">{priceDisplay}</p>
+                                          {service.pricingType !== "quoted" && (
+                                            <p className="text-[9px] text-[var(--text-disabled)] font-medium">per job</p>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      <Link
+                                        href={`/booking?serviceId=${service.id}&providerId=${service.providerId}`}
+                                        className={cn(
+                                          "mt-1 flex items-center justify-center w-full h-10 rounded-xl font-bold text-xs transition-all duration-200",
+                                          "bg-navy-50 text-navy-900 border border-navy-100",
+                                          "group-hover:bg-navy-900 group-hover:text-white group-hover:border-navy-900",
+                                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700"
+                                        )}
+                                      >
+                                        Book Now
+                                      </Link>
+                                    </div>
+                                  </article>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                  </div>
+              </section>
+
+              {/* WHY CHOOSE US */}
+              <section className="section-padding bg-[var(--bg-secondary)] border-y border-[var(--border-subtle)]" aria-labelledby="why-choose-us-title">
+                <div className="container-section text-center max-w-5xl space-y-12">
+                  <div className="space-y-3 max-w-xl mx-auto">
+                    <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Our Guarantees</p>
+                    <h2 id="why-choose-us-title" className="text-[var(--text-primary)]">Why Book Services on ProServe?</h2>
+                    <p className="text-[var(--text-secondary)] text-sm">We provide the highest quality domestic and commercial service experience in the United Arab Emirates.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                      {
+                        icon: UserCheck,
+                        title: "100% Vetted Pros",
+                        desc: "Every provider undergoes rigorous background screening, certification reviews, and identity verification before their listing is approved.",
+                        color: "bg-emerald-50 text-emerald-600",
+                      },
+                      {
+                        icon: ThumbsUp,
+                        title: "Satisfaction Guarantee",
+                        desc: "Your happiness is our priority. If you're not satisfied with the quality of execution, we'll send another professional to make it right.",
+                        color: "bg-gold-50 text-gold-600",
+                      },
+                      {
+                        icon: Lock,
+                        title: "Secure Cashless Payments",
+                        desc: "Your card is charged only after the service is fully completed and signed off. Enjoy zero hidden fees and clear upfront pricing.",
+                        color: "bg-navy-50 text-navy-800",
+                      },
+                    ].map((item, i) => {
+                      const Icon = item.icon;
+                      return (
+                        <div key={i} className="flex flex-col items-center p-6 bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm hover:shadow-md transition-shadow gap-4">
+                          <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", item.color)}>
+                            <Icon size={26} />
+                          </div>
+                          <div className="space-y-2">
+                            <h3 className="text-sm font-bold text-[var(--text-primary)]">{item.title}</h3>
+                            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
+                </div>
+              </section>
 
-        {/* WHY CHOOSE US */}
-        <section className="section-padding bg-[var(--bg-secondary)] border-y border-[var(--border-subtle)]" aria-labelledby="why-choose-us-title">
-          <div className="container-section text-center max-w-5xl space-y-12">
-            <div className="space-y-3 max-w-xl mx-auto">
-              <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Our Guarantees</p>
-              <h2 id="why-choose-us-title" className="text-[var(--text-primary)]">Why Book Services on ProServe?</h2>
-              <p className="text-[var(--text-secondary)] text-sm">We provide the highest quality domestic and commercial service experience in the United Arab Emirates.</p>
-            </div>
+              {/* FAQ SECTION */}
+              <FAQSection
+                title="Frequently Asked Questions"
+                subtitle="Everything you need to know about booking home services with ProServe."
+                categoryLabel="Help Desk"
+                items={FAQS}
+                bgClassName="bg-white"
+              />
+            </main>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  icon: UserCheck,
-                  title: "100% Vetted Pros",
-                  desc: "Every provider undergoes rigorous background screening, certification reviews, and identity verification before their listing is approved.",
-                  color: "bg-emerald-50 text-emerald-600",
-                },
-                {
-                  icon: ThumbsUp,
-                  title: "Satisfaction Guarantee",
-                  desc: "Your happiness is our priority. If you're not satisfied with the quality of execution, we'll send another professional to make it right.",
-                  color: "bg-gold-50 text-gold-600",
-                },
-                {
-                  icon: Lock,
-                  title: "Secure Cashless Payments",
-                  desc: "Your card is charged only after the service is fully completed and signed off. Enjoy zero hidden fees and clear upfront pricing.",
-                  color: "bg-navy-50 text-navy-800",
-                },
-              ].map((item, i) => {
-                const Icon = item.icon;
-                return (
-                  <div key={i} className="flex flex-col items-center p-6 bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm hover:shadow-md transition-shadow gap-4">
-                    <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", item.color)}>
-                      <Icon size={26} />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-bold text-[var(--text-primary)]">{item.title}</h3>
-                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+            {/* Mobile Filters Popup */}
+            <MobileFilterModal
+              isOpen={isMobileFilterOpen}
+              onClose={() => setIsMobileFilterOpen(false)}
+              categories={categories.map((cat) => ({
+                id: cat.id,
+                name: cat.name,
+                slug: cat.slug,
+                serviceCount: cat.serviceCount,
+                icon: ICON_MAP[cat.iconName.toLowerCase()] ?? Wrench,
+              }))}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+              allCategoryCount={services.length}
+              categoryLabel="Category"
+              locations={availableLocations}
+              selectedLocation={selectedLocation}
+              onLocationChange={handleLocationChange}
+              sortOptions={SORT_OPTIONS}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              hasActiveFilters={selectedCategory !== "all" || selectedLocation !== "all"}
+              onReset={handleClearAllFilters}
+              resultCount={filteredServices.length}
+              applyButtonLabel="Apply"
+            />
 
-        {/* FAQ SECTION */}
-        <FAQSection
-          title="Frequently Asked Questions"
-          subtitle="Everything you need to know about booking home services with ProServe."
-          categoryLabel="Help Desk"
-          items={FAQS}
-          bgClassName="bg-white"
-        />
-      </main>
-
-      <Footer />
-    </>
-  );
+            <Footer />
+          </>
+          );
 }
 
-export default function ServicesPage() {
+          export default function ServicesPage() {
   return (
-    <React.Suspense fallback={<div className="p-12 text-center text-xs">Loading services directory...</div>}>
-      <ServicesContent />
-    </React.Suspense>
-  );
+          <React.Suspense fallback={<div className="p-12 text-center text-xs">Loading services directory...</div>}>
+            <ServicesContent />
+          </React.Suspense>
+          );
 }

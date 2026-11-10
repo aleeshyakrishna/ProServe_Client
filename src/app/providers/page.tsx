@@ -20,7 +20,9 @@ import {
   Heart,
   Leaf,
   Scissors,
-  FileText
+  FileText,
+  ArrowUpDown,
+  ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +34,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { EmptyState, ErrorState } from "@/components/common/empty-state";
 import { buttonVariants } from "@/components/ui/button";
+import { MobileFilterModal } from "@/components/common/MobileFilterModal";
 
 // ------ Seeded database fallback profiles -------------------
 
@@ -85,6 +88,19 @@ const LOCATIONS = [
   { value: "Business Bay", label: "Business Bay" },
   { value: "Jumeirah", label: "Jumeirah" },
   { value: "Al Barsha", label: "Al Barsha" },
+];
+
+const PROVIDER_SORT_OPTIONS = [
+  { value: "rating", label: "Highest Rated" },
+  { value: "experience", label: "Most Experienced" },
+  { value: "alpha", label: "Alphabetical (A-Z)" },
+  { value: "recent", label: "Recently Added" },
+];
+
+const RATING_OPTIONS = [
+  { value: 0, label: "Any Rating" },
+  { value: 4.8, label: "4.8 ★ & above" },
+  { value: 4.9, label: "4.9 ★ & above" },
 ];
 
 // ------ Icon Map -------------------------------------------
@@ -153,6 +169,12 @@ function ProvidersContent() {
   const [selectedLocation, setSelectedLocation] = React.useState<string>(initialLoc);
   const [minRating, setMinRating] = React.useState<number>(initialRating);
   const [sortBy, setSortBy] = React.useState<string>("rating");
+
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
+  const activeFilterCount =
+    (selectedCategory !== "all" ? 1 : 0) +
+    (selectedLocation !== "all" ? 1 : 0) +
+    (minRating > 0 ? 1 : 0);
 
   // Keep state synced when searchParams change from external router pushes
   React.useEffect(() => {
@@ -429,356 +451,471 @@ function ProvidersContent() {
 
       <main id="main-content" className="flex-grow pt-16 lg:pt-18 bg-[var(--bg-primary)]">
         {/* Clean Compact Top Search Bar */}
-        <div className="!pt-24 pb-6 bg-white border-[var(--border-subtle)]">
-          <div className="container-section max-w-4xl">
-            <div className="w-full relative">
-              <label htmlFor="search-providers-input" className="sr-only">
-                Search providers by name or bio keyword
-              </label>
-              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-[var(--text-tertiary)]">
-                <Search size={20} />
-              </div>
-              <input
-                id="search-providers-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => handleQueryChange(e.target.value)}
-                placeholder="Search by provider name, specialty, or keyword..."
-                className={cn(
-                  "w-full h-12 pl-12 pr-16 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]",
-                  "text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]",
-                  "focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500",
-                  "transition-all duration-200"
-                )}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => handleQueryChange("")}
-                  className="absolute right-4 inset-y-0 text-xs font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] cursor-pointer"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+                <div className="!pt-20 lg:!pt-24 pb-5 lg:pb-6 bg-white border-b border-[var(--border-subtle)]">
+                  <div className="container-section max-w-4xl space-y-4">
+                    {/* Mobile Header Title */}
+                    <div className="lg:hidden space-y-1">
+                      <h1 className="text-xl font-extrabold text-navy-950 tracking-tight">
+                        Find a <span className="text-emerald-600">Verified Provider</span>
+                      </h1>
+                      <p className="text-xs text-[var(--text-tertiary)] leading-relaxed">
+                        Discover trusted, background-checked professionals across the UAE.
+                      </p>
+                    </div>
 
-        {/* ==========================================
+                    {/* Search Input Container */}
+                    <div className="space-y-2">
+                      <div className="w-full relative">
+                        <label htmlFor="search-providers-input" className="sr-only">
+                          Search providers by name or bio keyword
+                        </label>
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-[var(--text-tertiary)]">
+                          <Search size={18} />
+                        </div>
+                        <input
+                          id="search-providers-input"
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => handleQueryChange(e.target.value)}
+                          placeholder="Search by provider name, specialty, or keyword..."
+                          className={cn(
+                            "w-full h-12 pl-11 pr-16 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]",
+                            "text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]",
+                            "focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500",
+                            "transition-all duration-200"
+                          )}
+                        />
+                        {searchQuery && (
+                          <button
+                            onClick={() => handleQueryChange("")}
+                            className="absolute right-4 inset-y-0 text-xs font-semibold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] cursor-pointer"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+
+                        {/* Mobile Explicit Search Button */ }
+                        < button
+                type="button"
+                      onClick={() => {
+                        const el = document.getElementById("search-providers-input");
+                        el?.blur();
+                      }}
+                      className="lg:hidden w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2"
+              >
+                      <span>Search</span>
+                    </button>
+                  </div>
+
+                  {/* Mobile Controls: Sort Dropdown & Filters Popup Trigger */}
+                  <div className="lg:hidden pt-1 space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      {/* Mobile Sort Dropdown */}
+                      <div className="relative flex-1">
+                        <div className="w-full h-11 px-3.5 rounded-xl border border-[var(--border-subtle)] bg-white flex items-center justify-between text-xs font-semibold text-navy-900 shadow-xs pointer-events-none">
+                          <div className="flex items-center gap-2 truncate">
+                            <ArrowUpDown size={14} className="text-emerald-600 shrink-0" />
+                            <span className="truncate">
+                              {PROVIDER_SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label || "Sort"}
+                            </span>
+                          </div>
+                          <ChevronDown size={14} className="text-[var(--text-tertiary)] shrink-0" />
+                        </div>
+                        <label htmlFor="mobile-sort-select" className="sr-only">
+                          Sort providers list
+                        </label>
+                        <select
+                          id="mobile-sort-select"
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-xs"
+                        >
+                          {PROVIDER_SORT_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Mobile Filters Trigger Button */}
+                      <button
+                        type="button"
+                        onClick={() => setIsMobileFilterOpen(true)}
+                        className={cn(
+                          "flex-1 h-11 px-3.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-semibold transition-colors shadow-xs cursor-pointer",
+                          activeFilterCount > 0
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-800"
+                            : "border-[var(--border-subtle)] bg-white text-navy-900 hover:bg-neutral-50"
+                        )}
+                        aria-label="Open filter options"
+                      >
+                        <SlidersHorizontal size={14} className={activeFilterCount > 0 ? "text-emerald-700" : "text-emerald-600"} />
+                        <span>Filters</span>
+                        {activeFilterCount > 0 && (
+                          <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold leading-none">
+                            {activeFilterCount}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Result Count Heading on Mobile */}
+                    <div className="pt-1">
+                      <p className="text-base font-extrabold text-navy-950">
+                        {filteredProviders.length} {filteredProviders.length === 1 ? "Provider" : "Providers"} Found
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ==========================================
             2. PROVIDERS LISTINGS GRID & FILTERS
             ========================================== */}
-        <section className=" bg-white" aria-label="Providers directory listings">
-          <div className="container-section">
-            <div className="flex flex-col lg:flex-row gap-8">
+                <section className="py-6 lg:py-12 bg-white" aria-label="Providers directory listings">
+                  <div className="container-section">
+                    <div className="flex flex-col lg:flex-row gap-8">
 
-              {/* Sidebar Filters */}
-              <aside className="w-full lg:w-64 lg:min-w-[256px] lg:max-w-[256px] shrink-0 flex flex-col gap-6" aria-label="Filters">
+                        {/* Sidebar Filters - Desktop only */}
+                        <aside className="hidden lg:flex w-full lg:w-64 lg:min-w-[256px] lg:max-w-[256px] shrink-0 flex-col gap-6" aria-label="Filters">
 
-                {/* Active filters check block */}
-                {(selectedCategory !== "all" || selectedLocation !== "all" || minRating > 0 || searchQuery) && (
-                  <div className="p-4 rounded-xl bg-navy-50/50 border border-navy-100 flex items-center justify-between">
-                    <span className="text-xs text-navy-800 font-medium">Active filters</span>
-                    <button
-                      onClick={handleClearAllFilters}
-                      className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                )}
-
-                {/* Categories filter Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                    <SlidersHorizontal size={16} />
-                    Category
-                  </h3>
-                  <div className="flex flex-col gap-1.5" role="tablist">
-                    <button
-                      onClick={() => handleCategoryChange("all")}
-                      className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
-                        selectedCategory === "all"
-                          ? "bg-navy-900 text-white font-semibold"
-                          : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
-                      )}
-                      role="tab"
-                      aria-selected={selectedCategory === "all"}
-                    >
-                      <span>All Specialties</span>
-                      <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", selectedCategory === "all" ? "bg-navy-800 text-white" : "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]")}>
-                        {providers.length}
-                      </span>
-                    </button>
-
-                    {categories.map((cat) => {
-                      const count = providers.filter((p) => p.categories.some((c) => c.slug === cat.slug)).length;
-                      return (
-                        <button
-                          key={cat.id}
-                          onClick={() => handleCategoryChange(cat.slug)}
-                          className={cn(
-                            "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
-                            selectedCategory === cat.slug
-                              ? "bg-navy-900 text-white font-semibold"
-                              : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
-                          )}
-                          role="tab"
-                          aria-selected={selectedCategory === cat.slug}
-                        >
-                          <div className="flex items-center gap-2">
-                            <CategoryIcon name={cat.iconName} size={14} className={selectedCategory === cat.slug ? "text-emerald-400" : "text-[var(--text-tertiary)]"} />
-                            <span>{cat.name}</span>
-                          </div>
-                          <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", selectedCategory === cat.slug ? "bg-navy-800 text-white" : "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]")}>
-                            {count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Location Filter Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)]">Location</h3>
-                  <div className="relative">
-                    <label htmlFor="location-select" className="sr-only">
-                      Filter providers by location
-                    </label>
-                    <select
-                      id="location-select"
-                      value={selectedLocation}
-                      onChange={(e) => handleLocationChange(e.target.value)}
-                      className="w-full bg-white border border-[var(--border-subtle)] rounded-xl px-3 h-10 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                    >
-                      {availableLocations.map((loc) => (
-                        <option key={loc.value} value={loc.value}>
-                          {loc.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Rating Filter Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)]">Minimum Rating</h3>
-                  <div className="flex flex-col gap-2">
-                    {[
-                      { value: 0, label: "Any Rating" },
-                      { value: 4.8, label: "4.8 ★ & above" },
-                      { value: 4.9, label: "4.9 ★ & above" }
-                    ].map((opt) => (
-                      <label key={opt.value} className="flex items-center gap-2.5 text-xs text-[var(--text-secondary)] cursor-pointer">
-                        <input
-                          type="radio"
-                          name="minRating"
-                          value={opt.value}
-                          checked={minRating === opt.value}
-                          onChange={() => handleRatingChange(opt.value)}
-                          className="h-4 w-4 border-[var(--border-default)] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
-                        />
-                        <span>{opt.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </aside>
-
-              {/* Main Panel Listings */}
-              <div className="flex-1 min-w-0 flex flex-col gap-6">
-
-                {/* Result header count & Sorting */}
-                <div className="flex items-center justify-between pb-4 border-b border-[var(--border-subtle)]">
-                  <div className="space-y-1">
-                    <h2 className="text-lg font-bold text-[var(--text-primary)]">
-                      Available Professionals
-                    </h2>
-                    <p className="text-xs text-[var(--text-tertiary)]">
-                      Found {filteredProviders.length} {filteredProviders.length === 1 ? "provider" : "providers"} matching search criteria
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="sorting-select" className="sr-only">
-                      Sort providers list
-                    </label>
-                    <select
-                      id="sorting-select"
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="bg-white border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                    >
-                      <option value="rating">Highest Rated</option>
-                      <option value="experience">Most Experienced</option>
-                      <option value="alpha">Alphabetical (A-Z)</option>
-                      <option value="recent">Recently Added</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Listing grid states */}
-                {isLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <ProviderCardSkeleton key={i} />
-                    ))}
-                  </div>
-                ) : isError ? (
-                  <ErrorState
-                    title="Could not load providers"
-                    description="Our server encountered an issue loading registered service providers. Please retry."
-                    onRetry={() => {
-                      setIsLoading(true);
-                      loadData(true);
-                    }}
-                  />
-                ) : filteredProviders.length === 0 ? (
-                  <EmptyState
-                    title="No matching providers found"
-                    description="We couldn't find any professionals matching your search queries or active filters."
-                    action={{
-                      label: "Reset All Filters",
-                      onClick: handleClearAllFilters,
-                    }}
-                  />
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-                    {filteredProviders.map((prov) => (
-                      <article
-                        key={prov.id}
-                        className={cn(
-                          "group flex flex-col",
-                          "rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)]",
-                          "p-6 gap-5",
-                          "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-                          "hover:shadow-xl hover:-translate-y-1 hover:border-emerald-100"
-                        )}
-                      >
-                        {/* Header: Avatar + Business Name */}
-                        <div className="flex items-start gap-4">
-                          <div className="relative shrink-0 select-none">
-                            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-navy-700 to-navy-900 flex items-center justify-center text-white text-xl font-bold shadow-md">
-                              {prov.businessName[0]}
-                            </div>
-                            {prov.isVerified && (
-                              <div
-                                className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-sm"
-                                title="Verified Professional"
+                          {/* Active filters check block */}
+                          {(selectedCategory !== "all" || selectedLocation !== "all" || minRating > 0 || searchQuery) && (
+                            <div className="p-4 rounded-xl bg-navy-50/50 border border-navy-100 flex items-center justify-between">
+                              <span className="text-xs text-navy-800 font-medium">Active filters</span>
+                              <button
+                                onClick={handleClearAllFilters}
+                                className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
                               >
-                                <BadgeCheck size={12} className="text-white" />
-                              </div>
-                            )}
+                                Clear All
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Categories filter Card */}
+                          <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
+                            <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+                              <SlidersHorizontal size={16} />
+                              Category
+                            </h3>
+                            <div className="flex flex-col gap-1.5" role="tablist">
+                              <button
+                                onClick={() => handleCategoryChange("all")}
+                                className={cn(
+                                  "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
+                                  selectedCategory === "all"
+                                    ? "bg-navy-900 text-white font-semibold"
+                                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+                                )}
+                                role="tab"
+                                aria-selected={selectedCategory === "all"}
+                              >
+                                <span>All Specialties</span>
+                                <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", selectedCategory === "all" ? "bg-navy-800 text-white" : "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]")}>
+                                  {providers.length}
+                                </span>
+                              </button>
+
+                              {categories.map((cat) => {
+                                const count = providers.filter((p) => p.categories.some((c) => c.slug === cat.slug)).length;
+                                return (
+                                  <button
+                                    key={cat.id}
+                                    onClick={() => handleCategoryChange(cat.slug)}
+                                    className={cn(
+                                      "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer",
+                                      selectedCategory === cat.slug
+                                        ? "bg-navy-900 text-white font-semibold"
+                                        : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+                                    )}
+                                    role="tab"
+                                    aria-selected={selectedCategory === cat.slug}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <CategoryIcon name={cat.iconName} size={14} className={selectedCategory === cat.slug ? "text-emerald-400" : "text-[var(--text-tertiary)]"} />
+                                      <span>{cat.name}</span>
+                                    </div>
+                                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", selectedCategory === cat.slug ? "bg-navy-800 text-white" : "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]")}>
+                                      {count}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <Link
-                                  href={`/providers/${prov.id}`}
-                                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded"
-                                >
-                                  <h3 className="font-bold text-[var(--text-primary)] leading-tight hover:text-emerald-600 transition-colors truncate">
-                                    {prov.businessName}
-                                  </h3>
-                                </Link>
-                                <p className="text-xs text-[var(--text-tertiary)] mt-0.5 truncate">
-                                  {prov.tagline}
+                          {/* Location Filter Card */}
+                          <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
+                            <h3 className="text-sm font-bold text-[var(--text-primary)]">Location</h3>
+                            <div className="relative">
+                              <label htmlFor="location-select" className="sr-only">
+                                Filter providers by location
+                              </label>
+                              <select
+                                id="location-select"
+                                value={selectedLocation}
+                                onChange={(e) => handleLocationChange(e.target.value)}
+                                className="w-full bg-white border border-[var(--border-subtle)] rounded-xl px-3 h-10 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                              >
+                                {availableLocations.map((loc) => (
+                                  <option key={loc.value} value={loc.value}>
+                                    {loc.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Rating Filter Card */}
+                          <div className="rounded-2xl border border-[var(--border-subtle)] p-5 space-y-4">
+                            <h3 className="text-sm font-bold text-[var(--text-primary)]">Minimum Rating</h3>
+                            <div className="flex flex-col gap-2">
+                                {
+                                  RATING_OPTIONS.map((opt) => (
+                                    <label key={opt.value} className="flex items-center gap-2.5 text-xs text-[var(--text-secondary)] cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="minRating"
+                                        value={opt.value}
+                                        checked={minRating === opt.value}
+                                        onChange={() => handleRatingChange(opt.value)}
+                                        className="h-4 w-4 border-[var(--border-default)] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
+                                      />
+                                      <span>{opt.label}</span>
+                                    </label>
+                                  ))
+                                }
+                  </div>
+                          </div>
+                        </aside>
+
+                        {/* Main Panel Listings */}
+                        <div className="flex-1 min-w-0 flex flex-col gap-6">
+
+                            {/* Result header count & Sorting - Desktop only */}
+                            <div className="hidden lg:flex items-center justify-between pb-4 border-b border-[var(--border-subtle)]">
+                              <div className="space-y-1">
+                                <h2 className="text-lg font-bold text-[var(--text-primary)]">
+                                  Available Professionals
+                                </h2>
+                                <p className="text-xs text-[var(--text-tertiary)]">
+                                  Found {filteredProviders.length} {filteredProviders.length === 1 ? "provider" : "providers"} matching search criteria
                                 </p>
                               </div>
-                              {prov.isFeatured && (
-                                <Badge variant="accent" className="shrink-0 select-none font-semibold">
-                                  Featured
-                                </Badge>
-                              )}
+
+                              <div className="flex items-center gap-2">
+                                <label htmlFor="sorting-select" className="sr-only">
+                                  Sort providers list
+                                </label>
+                                <select
+                                  id="sorting-select"
+                                  value={sortBy}
+                                  onChange={(e) => setSortBy(e.target.value)}
+                                  className="bg-white border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                                >
+                                  {PROVIDER_SORT_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
                             </div>
 
-                            <div className="mt-2">
-                              <Rating value={prov.rating} showValue reviewCount={prov.reviewCount} size="sm" />
-                            </div>
-                          </div>
-                        </div>
+                            {/* Listing grid states */}
+                            {isLoading ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                  <ProviderCardSkeleton key={i} />
+                                ))}
+                              </div>
+                            ) : isError ? (
+                              <ErrorState
+                                title="Could not load providers"
+                                description="Our server encountered an issue loading registered service providers. Please retry."
+                                onRetry={() => {
+                                  setIsLoading(true);
+                                  loadData(true);
+                                }}
+                              />
+                            ) : filteredProviders.length === 0 ? (
+                              <EmptyState
+                                title="No matching providers found"
+                                description="We couldn't find any professionals matching your search queries or active filters."
+                                action={{
+                                  label: "Reset All Filters",
+                                  onClick: handleClearAllFilters,
+                                }}
+                              />
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                                {filteredProviders.map((prov) => (
+                                  <article
+                                    key={prov.id}
+                                    className={cn(
+                                      "group flex flex-col",
+                                      "rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)]",
+                                      "p-6 gap-5",
+                                      "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+                                      "hover:shadow-xl hover:-translate-y-1 hover:border-emerald-100"
+                                    )}
+                                  >
+                                    {/* Header: Avatar + Business Name */}
+                                    <div className="flex items-start gap-4">
+                                      <div className="relative shrink-0 select-none">
+                                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-navy-700 to-navy-900 flex items-center justify-center text-white text-xl font-bold shadow-md">
+                                          {prov.businessName[0]}
+                                        </div>
+                                        {prov.isVerified && (
+                                          <div
+                                            className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-sm"
+                                            title="Verified Professional"
+                                          >
+                                            <BadgeCheck size={12} className="text-white" />
+                                          </div>
+                                        )}
+                                      </div>
 
-                        {/* Bio paragraph description */}
-                        <p className="text-[11px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed h-8">
-                          {prov.bio}
-                        </p>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-2">
+                                          <div className="min-w-0">
+                                            <Link
+                                              href={`/providers/${prov.id}`}
+                                              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded"
+                                            >
+                                              <h3 className="font-bold text-[var(--text-primary)] leading-tight hover:text-emerald-600 transition-colors truncate">
+                                                {prov.businessName}
+                                              </h3>
+                                            </Link>
+                                            <p className="text-xs text-[var(--text-tertiary)] mt-0.5 truncate">
+                                              {prov.tagline}
+                                            </p>
+                                          </div>
+                                          {prov.isFeatured && (
+                                            <Badge variant="accent" className="shrink-0 select-none font-semibold">
+                                              Featured
+                                            </Badge>
+                                          )}
+                                        </div>
 
-                        {/* Stats Row */}
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="flex items-center gap-1.5 p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
-                            <Briefcase size={13} className="text-navy-600 shrink-0" />
-                            <div>
-                              <p className="font-extrabold text-navy-950 leading-none">{prov.completedJobs}+</p>
-                              <p className="text-[9px] text-[var(--text-tertiary)] mt-0.5 font-semibold">Jobs Done</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
-                            <Clock size={13} className="text-emerald-600 shrink-0" />
-                            <div>
-                              <p className="font-extrabold text-navy-950 leading-none">{prov.responseTime}</p>
-                              <p className="text-[9px] text-[var(--text-tertiary)] mt-0.5 font-semibold">Response</p>
-                            </div>
-                          </div>
-                        </div>
+                                        <div className="mt-2">
+                                          <Rating value={prov.rating} showValue reviewCount={prov.reviewCount} size="sm" />
+                                        </div>
+                                      </div>
+                                    </div>
 
-                        {/* Location and Category badges */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-3.5 mt-auto">
-                          <span className="flex items-center gap-1 text-[10px] text-[var(--text-tertiary)] font-bold">
-                            <MapPin size={12} className="text-[var(--text-secondary)] shrink-0" />
-                            {prov.location.split(",")[0]}
-                          </span>
+                                    {/* Bio paragraph description */}
+                                    <p className="text-[11px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed h-8">
+                                      {prov.bio}
+                                    </p>
 
-                          <div className="flex flex-wrap gap-1">
-                            {prov.categories.map((c) => (
-                              <Badge key={c.id} variant="emerald" className="text-[9px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-none select-none">
-                                {c.name}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
+                                    {/* Stats Row */}
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                      <div className="flex items-center gap-1.5 p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
+                                        <Briefcase size={13} className="text-navy-600 shrink-0" />
+                                        <div>
+                                          <p className="font-extrabold text-navy-950 leading-none">{prov.completedJobs}+</p>
+                                          <p className="text-[9px] text-[var(--text-tertiary)] mt-0.5 font-semibold">Jobs Done</p>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
+                                        <Clock size={13} className="text-emerald-600 shrink-0" />
+                                        <div>
+                                          <p className="font-extrabold text-navy-950 leading-none">{prov.responseTime}</p>
+                                          <p className="text-[9px] text-[var(--text-tertiary)] mt-0.5 font-semibold">Response</p>
+                                        </div>
+                                      </div>
+                                    </div>
 
-                        {/* Action CTAs */}
-                        <div className="flex gap-2">
-                          <Link
-                            href={`/booking?providerId=${prov.id}`}
-                            className={cn(
-                              buttonVariants({ variant: "primary", size: "md" }),
-                              "flex-1 font-bold text-xs text-center"
+                                    {/* Location and Category badges */}
+                                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-3.5 mt-auto">
+                                      <span className="flex items-center gap-1 text-[10px] text-[var(--text-tertiary)] font-bold">
+                                        <MapPin size={12} className="text-[var(--text-secondary)] shrink-0" />
+                                        {prov.location.split(",")[0]}
+                                      </span>
+
+                                      <div className="flex flex-wrap gap-1">
+                                        {prov.categories.map((c) => (
+                                          <Badge key={c.id} variant="emerald" className="text-[9px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-none select-none">
+                                            {c.name}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Action CTAs */}
+                                    <div className="flex gap-2">
+                                      <Link
+                                        href={`/booking?providerId=${prov.id}`}
+                                        className={cn(
+                                          buttonVariants({ variant: "primary", size: "md" }),
+                                          "flex-1 font-bold text-xs text-center"
+                                        )}
+                                      >
+                                        Book Service
+                                      </Link>
+                                      <Link
+                                        href={`/providers/${prov.id}`}
+                                        className={cn(
+                                          buttonVariants({ variant: "outline", size: "md" }),
+                                          "flex-1 font-bold text-xs text-center"
+                                        )}
+                                      >
+                                        View Profile
+                                      </Link>
+                                    </div>
+                                  </article>
+                                ))}
+                              </div>
                             )}
-                          >
-                            Book Service
-                          </Link>
-                          <Link
-                            href={`/providers/${prov.id}`}
-                            className={cn(
-                              buttonVariants({ variant: "outline", size: "md" }),
-                              "flex-1 font-bold text-xs text-center"
-                            )}
-                          >
-                            View Profile
-                          </Link>
+                          </div>
+
                         </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    </div>
+                </section>
+              </main>
 
-            </div>
-          </div>
-        </section>
-      </main>
+              {/* Mobile Filters Popup */}
+              <MobileFilterModal
+                isOpen={isMobileFilterOpen}
+                onClose={() => setIsMobileFilterOpen(false)}
+                categories={categories.map((cat) => ({
+                  id: cat.id,
+                  name: cat.name,
+                  slug: cat.slug,
+                  serviceCount: providers.filter((p) => p.categories.some((c) => c.slug === cat.slug)).length,
+                  icon: ICON_MAP[cat.iconName.toLowerCase()] ?? Wrench,
+                }))}
+                selectedCategory={selectedCategory}
+                onCategoryChange={handleCategoryChange}
+                allCategoryCount={providers.length}
+                categoryLabel="Specialty"
+                locations={availableLocations}
+                selectedLocation={selectedLocation}
+                onLocationChange={handleLocationChange}
+                ratingOptions={RATING_OPTIONS}
+                selectedRating={minRating}
+                onRatingChange={handleRatingChange}
+                sortOptions={PROVIDER_SORT_OPTIONS}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                hasActiveFilters={selectedCategory !== "all" || selectedLocation !== "all" || minRating > 0}
+                onReset={handleClearAllFilters}
+                resultCount={filteredProviders.length}
+                applyButtonLabel="Apply"
+              />
 
-      <Footer />
-    </>
-  );
+              <Footer />
+            </>
+            );
 }
 
-export default function ProvidersListPage() {
+            export default function ProvidersListPage() {
   return (
-    <React.Suspense fallback={<div className="p-12 text-center text-xs">Loading providers directory...</div>}>
-      <ProvidersContent />
-    </React.Suspense>
-  );
+            <React.Suspense fallback={<div className="p-12 text-center text-xs">Loading providers directory...</div>}>
+              <ProvidersContent />
+            </React.Suspense>
+            );
 }
